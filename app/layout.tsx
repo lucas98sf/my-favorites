@@ -1,5 +1,6 @@
-import { GeistSans } from "geist/font/sans";
+import { Sono as FontSans } from "next/font/google"
 import "./globals.css";
+import { NavBar } from "@/components/NavBar";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -11,14 +12,21 @@ export const metadata = {
   description: "The fastest way to build apps with Next.js and Supabase",
 };
 
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
   return (
-    <html lang="en" className={GeistSans.className}>
+    <html lang="en" className={fontSans.className}>
       <body className="bg-background text-foreground">
+        <NavBar />
         <main className="min-h-screen flex flex-col items-center">
           {children}
         </main>
