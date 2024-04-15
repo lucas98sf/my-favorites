@@ -1,8 +1,5 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { Button } from "@/components/ui/button";
-
-
 
 export const NavBar = async () => {
     const supabase = createClient()
@@ -11,7 +8,9 @@ export const NavBar = async () => {
 
     return data?.user ? (
         <form action="/auth/signout" method="post">
-            <div>{data.user?.email || ""}</div>
+            <div
+                className="fixed top-4 left-4"
+            >{data.user?.email || ""}</div>
             <Button
                 className="fixed top-4 right-4"
                 type="submit">Sign Out</Button>

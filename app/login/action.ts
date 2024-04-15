@@ -3,21 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { LoginUser, SignUpUser } from '@/lib/user'
 import { isAuthApiError, isAuthWeakPasswordError } from '@supabase/supabase-js'
-
-export type Result<T = void> =
-    T extends void ? void | {
-        status: 'error',
-        message: string
-    } : {
-        status: 'success',
-        data: T
-    } | {
-        status: 'error',
-        message: string
-    }
+import { getURL } from '@/lib/utils'
+import { Result } from '@/lib/types'
 
 export async function login(formData: LoginUser): Promise<Result<void>> {
     const supabase = createClient()
@@ -57,4 +47,29 @@ export async function signup(formData: SignUpUser): Promise<Result<void>> {
 
     revalidatePath('/', 'layout')
     redirect('/')
+}
+
+export async function signInWithGoogle(): Promise<Result<void>> {
+    const supabase = createClient()
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+            },
+            redirectTo: `${getURL()}/auth/confirm`,
+        },
+    })
+
+    if (error) {
+        console.error(error)
+        return {
+            status: 'error',
+            message: 'An error occurred'
+        }
+    }
+
+    redirect(data.url)
 }

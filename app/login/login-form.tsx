@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
-import { Result, login, signup } from "./action"
+import { login, signInWithGoogle, signup } from "./action"
 import { useState } from "react"
 import { signupSchema, loginSchema, LoginUser, SignUpUser } from "@/lib/user"
 import { z } from "zod"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { debounce } from "remeda"
-import { AuthApiError } from "@supabase/supabase-js"
+import { EnvelopeOpenIcon } from "@radix-ui/react-icons"
 import { ErrorAlert } from "@/components/ErrorAlert"
+import { Result } from "@/lib/types"
 
 export default function LoginForm() {
   const [mode, setMode] = useState<"login" | "signup">("login")
@@ -86,17 +86,43 @@ export default function LoginForm() {
     setLoading(false)
   }
 
+  const handleGoogleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(false)
+
+    signInWithGoogle()
+      .then((result: Result) => {
+        if (result?.status === "error") {
+          setError(true)
+        }
+      }).catch(() => {
+        setError(true)
+      })
+    setLoading(false)
+  }
+
   return (
     <Card className="m-auto py-10 p-8">
       {error && <ErrorAlert />}
       <CardHeader>
         <h1 className="text-2xl font-bold">{mode === "login" ? "Login" : "Sign Up"}</h1>
+        <form onSubmit={handleGoogleSubmit}>
+          <Button
+            disabled={loading}
+            type="submit"
+          >
+            <EnvelopeOpenIcon className="mr-2 h-4 w-4" /> SignIn with Google
+          </Button>
+        </form>
       </CardHeader>
       {
         mode === "login" ? (
           <Form {...loginForm}>
             <form key="login" onSubmit={loginForm.handleSubmit(onSubmit)} className="space-y-8">
-              <CardContent>
+              <CardContent
+                className="space-y-4"
+              >
                 <FormField
                   control={loginForm.control}
                   name="email"
@@ -144,10 +170,13 @@ export default function LoginForm() {
                 </div>
               </CardFooter>
             </form>
-          </Form>) : (
+          </Form>
+        ) : (
           <Form {...signUpForm}>
             <form key="signup" onSubmit={signUpForm.handleSubmit(onSubmit)} className="space-y-8">
-              <CardContent>
+              <CardContent
+                className="space-y-4"
+              >
                 <FormField
                   control={signUpForm.control}
                   name="email"
