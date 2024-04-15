@@ -5,7 +5,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --fix",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "gentypes": "supabase gen types typescript --project-id ggzalqnaowvopihbidxf > ./supabase/database.types.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -13,9 +14,6 @@
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-navigation-menu": "^1.1.4",
     "@radix-ui/react-slot": "^1.0.2",
-    "@supabase/auth-helpers-react": "^0.5.0",
-    "@supabase/auth-ui-react": "^0.4.7",
-    "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "autoprefixer": "10.4.17",
