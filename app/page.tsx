@@ -1,12 +1,13 @@
-import Profile from '@/components/Profile'
-import { createClient } from '@/lib/supabase/server'
+"use client"
+import { redirect, useSearchParams } from "next/navigation"
 
-export default async function ProfilePage() {
-  const supabase = createClient()
+export default function ProfilePage() {
+  const params = useSearchParams()
+  const code = params.get("code")
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  if (code) {
+    redirect(`/auth/callback?code=${code}`)
+  }
 
-  return <Profile user={user} />
+  return <></>
 }

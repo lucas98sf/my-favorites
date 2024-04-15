@@ -4,7 +4,7 @@
     "dev": "next --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "next lint --fix",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -23,6 +23,7 @@
     "clsx": "^2.1.0",
     "next": "latest",
     "postcss": "8.4.33",
+    "prettier": "^3.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.3",
@@ -41,15 +42,8 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.1",
     "eslint-config-prettier": "^9.1.0",
-    "lint-staged": "^15.2.2",
-    "husky": "^8.0.0"
-  },
-  "lint-staged": {
-    "*.{js, jsx,ts,tsx}": [
-      "eslint --quiet --fix"
-    ],
-    "*.{json,js,ts,jsx,tsx,html}": [
-      "prettier --write --ignore-unknown"
-    ]
+    "eslint-plugin-simple-import-sort": "^12.1.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.2.2"
   }
 }

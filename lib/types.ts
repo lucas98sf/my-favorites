@@ -1,11 +1,14 @@
-export type Result<T = void> =
-    T extends void ? void | {
-        status: 'error',
-        message: string
-    } : {
-        status: 'success',
-        data: T
-    } | {
-        status: 'error',
-        message: string
-    }
+export type Error = {
+  status: "error"
+  message: string
+  code?: string
+}
+
+export type Result<T = void> = T extends void
+  ? void | Error
+  :
+      | {
+          status: "success"
+          data: T
+        }
+      | Error
