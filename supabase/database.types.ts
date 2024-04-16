@@ -10,7 +10,6 @@ export type Database = {
           full_name: string | null
           letterboxd_username: string | null
           mal_username: string | null
-          spotify_token: string | null
           user_id: string
           username: string | null
         }
@@ -20,7 +19,6 @@ export type Database = {
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
-          spotify_token?: string | null
           user_id?: string
           username?: string | null
         }
@@ -30,7 +28,6 @@ export type Database = {
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
-          spotify_token?: string | null
           user_id?: string
           username?: string | null
         }
@@ -46,7 +43,61 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_view: {
+        Row: {
+          backloggd_username: string | null
+          full_name: string | null
+          letterboxd_username: string | null
+          mal_username: string | null
+          spotify_linked: boolean | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          backloggd_username?: string | null
+          full_name?: string | null
+          letterboxd_username?: string | null
+          mal_username?: string | null
+          spotify_linked?: never
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          backloggd_username?: string | null
+          full_name?: string | null
+          letterboxd_username?: string | null
+          mal_username?: string | null
+          spotify_linked?: never
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_profile_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_spotify_token_view: {
+        Row: {
+          auth_code: string | null
+          auth_code_issued_at: string | null
+          authentication_method: string | null
+          code_challenge: string | null
+          code_challenge_method: "s256" | "plain" | null
+          created_at: string | null
+          id: string | null
+          provider_access_token: string | null
+          provider_refresh_token: string | null
+          provider_type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

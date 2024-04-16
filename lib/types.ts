@@ -4,11 +4,9 @@ export type Error = {
   code?: string
 }
 
-export type Result<T = void> = T extends void
-  ? void | Error
-  :
-      | {
-          status: "success"
-          data: T
-        }
-      | Error
+export type Result<T = null> =
+  | {
+      status: "success"
+      data: T
+    }
+  | Error

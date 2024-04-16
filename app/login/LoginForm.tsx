@@ -86,8 +86,7 @@ export default function LoginForm() {
     setLoading(false)
   }
 
-  const handleGoogleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleGoogleSubmit = async () => {
     setLoading(true)
     setError(false)
 
@@ -154,7 +153,6 @@ export default function LoginForm() {
                   disabled={loading}
                   variant="secondary"
                   onClick={e => {
-                    e.preventDefault()
                     setMode("signUp")
                     signUpForm.reset()
                     setError(false)
@@ -222,7 +220,6 @@ export default function LoginForm() {
                   disabled={loading}
                   variant="secondary"
                   onClick={e => {
-                    e.preventDefault()
                     setMode("login")
                     loginForm.reset()
                     setError(false)

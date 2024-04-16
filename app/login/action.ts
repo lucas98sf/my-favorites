@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { LoginUser, SignUpUser } from "@/lib/user"
 
-export async function login(formData: LoginUser): Promise<Result<void>> {
+export async function login(formData: LoginUser): Promise<Result> {
   const supabase = createClient()
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -30,7 +30,7 @@ export async function login(formData: LoginUser): Promise<Result<void>> {
   redirect("/")
 }
 
-export async function signUp(formData: SignUpUser): Promise<Result<void>> {
+export async function signUp(formData: SignUpUser): Promise<Result> {
   const supabase = createClient()
   const origin = headers().get("origin")
 
@@ -58,7 +58,7 @@ export async function signUp(formData: SignUpUser): Promise<Result<void>> {
   redirect("/")
 }
 
-export async function signInWithGoogle(): Promise<Result<void>> {
+export async function signInWithGoogle(): Promise<Result> {
   const supabase = createClient()
 
   const redirectTo = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/auth/callback`
