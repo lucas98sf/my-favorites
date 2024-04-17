@@ -106,7 +106,7 @@ export async function getUserSpotifyAccessToken(): Promise<Result<string>> {
     console.error(error)
     return {
       status: "error",
-      message: "could not find spotify data",
+      message: "Could not find spotify data",
     }
   }
 }

@@ -1,5 +1,4 @@
 "use server"
-
 import { isAuthApiError, isAuthWeakPasswordError } from "@supabase/supabase-js"
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"

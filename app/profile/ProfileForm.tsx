@@ -2,7 +2,7 @@
 import { User } from "@supabase/supabase-js"
 import { useCallback, useEffect, useState } from "react"
 
-import { authSpotify, getUserProfile, getUserSpotifyAccessToken, updateUserProfile } from "@/app/profile/actions"
+import { authSpotify, getUserProfile, getUserSpotifyAccessToken, updateUserProfile } from "@/app/profile/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
 import { Button } from "@/components/ui/button"
