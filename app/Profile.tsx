@@ -1,15 +1,15 @@
 "use client"
 import { User } from "@supabase/supabase-js"
+import Image from "next/image"
 import { redirect, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 
+import { getUserData } from "@/app/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
-import { Database } from "@/supabase/database.types"
-
-type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
 export default function Profile() {
   const params = useSearchParams()
@@ -24,7 +24,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [profileData, setProfileData] = useState<Profile | null>(null)
+  const [profileData, setProfileData] = useState<any | null>(null)
 
   const [user, setUser] = useState<User | null>(null)
 
@@ -43,28 +43,45 @@ export default function Profile() {
   }, [supabase])
 
   const getProfile = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      setSuccess(null)
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
 
-      const { data, error, status } = await supabase.from("profiles").select("*").eq("user_id", user?.id).single()
+    const profileData = await getUserData()
 
-      if (error && status !== 406) {
-        console.log(error)
-        throw error
-      }
-
-      if (data) {
-        setProfileData(data)
-      }
-    } catch (error: any) {
-      setError(error.message)
-      console.error(error)
-    } finally {
-      setLoading(false)
+    if (profileData.status === "error") {
+      setError(profileData.message)
     }
-  }, [supabase, user?.id])
+
+    if (profileData.status === "success") {
+      setProfileData(profileData.data)
+    }
+
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    //@ts-ignore
+    window.onSpotifyIframeApiReady = IFrameAPI => {
+      profileData.spotifyData.forEach((track: any) => {
+        const element = document.getElementById("embed-iframe")
+        const options = {
+          width: "100%",
+          height: "100",
+          uri: track.uri,
+        }
+        const callback = (EmbedController: any) => {
+          document.querySelectorAll(".track").forEach(track => {
+            track.addEventListener("click", () => {
+              //@ts-ignore
+              EmbedController.loadUri(track.dataset.spotifyId)
+            })
+          })
+        }
+        IFrameAPI?.createController(element, options, callback)
+      })
+    }
+  }, [profileData?.spotifyData])
 
   useEffect(() => {
     if (!user) {
@@ -80,7 +97,27 @@ export default function Profile() {
         <Card className="m-auto py-10 p-8 mx-24">
           {success && <SuccessAlert message={success} />}
           {error && <ErrorAlert message={error} />}
-          {JSON.stringify(profileData, null, 2)}
+          <div className="flex flex-row justify-around gap-4">
+            <Avatar>
+              <AvatarImage src={profileData.avatar_url} alt={profileData.username ?? undefined} />
+              <AvatarFallback>
+                {(profileData.full_name as string).split(" ").map(s => s[0].toUpperCase())}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-bold">{profileData.username}</h1>
+              <span className="mb-6">{profileData.full_name}</span>
+              <div className="tracks flex flex-col gap-2">
+                {profileData.spotifyData?.map((track: any, index: number) => (
+                  <button key={index} className="track" data-spotify-id={track.uri}>
+                    <span>{track.name}</span>
+                  </button>
+                ))}
+                <div id="embed-iframe" />
+              </div>
+              <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+            </div>
+          </div>
         </Card>
       )
 }

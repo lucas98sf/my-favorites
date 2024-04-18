@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { authSpotify, getUserProfile, getUserSpotifyData, updateUserProfile } from "@/app/profile/action"
+import { authSpotify, getUserProfile, updateUserProfile } from "@/app/profile/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
 import { Button } from "@/components/ui/button"
@@ -34,11 +34,7 @@ export default function ProfileForm() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const [user, setUser] = useState<User | null>(null)
-
-  //@todo: add form
   const [spotifyToken, setSpotifyToken] = useState<string | null>(null)
-  const [spotifyData, setSpotifyData] = useState<string | null>(null)
-  // const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -63,14 +59,9 @@ export default function ProfileForm() {
     setSuccess(null)
 
     const result = await getUserProfile(user?.id as string)
-    const resultSpotifyData = await getUserSpotifyData()
-    console.log({ resultSpotifyData })
 
     if (result.status === "error") {
       setError(result.message)
-    }
-    if (resultSpotifyData.status === "error") {
-      setError(resultSpotifyData.message)
     }
 
     if (result.status === "success") {
@@ -84,9 +75,6 @@ export default function ProfileForm() {
       setSpotifyToken(result.data.spotify_token)
     }
 
-    if (resultSpotifyData.status === "success") {
-      setSpotifyData(resultSpotifyData.data as any)
-    }
     setLoading(false)
   }, [profileForm, user?.id])
 

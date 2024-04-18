@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const {
       data: { session },
     } = await supabase.auth.exchangeCodeForSession(code)
-
+    await supabase.auth.startAutoRefresh()
     await supabase.from("profiles").update({ spotify_token: session?.provider_token }).eq("user_id", session?.user.id)
   }
 

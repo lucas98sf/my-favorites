@@ -19,7 +19,7 @@ export async function authSpotify() {
     provider: "spotify",
     options: {
       redirectTo,
-      scopes: "user-read-email user-read-private",
+      scopes: "user-read-email user-read-private user-top-read",
       queryParams: {
         grant_type: "authorization_code",
       },
@@ -59,58 +59,7 @@ export async function getUserProfile(user_id: string): Promise<Result<Profile>> 
   }
 }
 
-export async function getUserSpotifyData(): Promise<Result<string>> {
-  try {
-    const supabase = createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    const { data, error, statusText } = await supabase
-      .from("profiles")
-      .select("spotify_token")
-      .eq("user_id", user?.id)
-      .single()
-
-    if (error) {
-      console.error(error)
-      return {
-        status: "error",
-        message: "There was an error updating your profile",
-        code: statusText,
-      }
-    }
-
-    const spotifyData = await fetch("https://api.spotify.com/v1/me", {
-      headers: {
-        Authorization: `Bearer ${data?.spotify_token}`,
-      },
-    })
-      .then(res => res.json())
-      .catch(error => {
-        console.error(error)
-        return {
-          status: "error",
-          message: "There was an error fetching your spotify data",
-        }
-      })
-
-    return {
-      status: "success",
-      data: JSON.stringify(spotifyData, null, 2) as string,
-    }
-  } catch (error) {
-    console.error(error)
-    return {
-      status: "error",
-      message: "Could not find spotify data",
-    }
-  }
-}
-
 export async function updateUserProfile(data: Partial<Profile & { user_id: string }>): Promise<Result> {
-  console.log("!!!")
   const supabase = createClient()
 
   const { error, statusText } = await supabase.from("profiles").upsert(
