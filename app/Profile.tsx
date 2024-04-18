@@ -39,8 +39,6 @@ export default function Profile() {
 
     setUser(user)
 
-    if (!user) throw new Error("User not found")
-
     setLoading(false)
   }, [supabase])
 
@@ -76,11 +74,13 @@ export default function Profile() {
     }
   }, [user, getProfile, getUser])
 
-  return (
-    <Card className="m-auto py-10 p-8 mx-24">
-      {success && <SuccessAlert message={success} />}
-      {error && <ErrorAlert message={error} />}
-      {loading ? "Loading..." : JSON.stringify(profileData, null, 2)}
-    </Card>
-  )
+  return loading
+    ? "Loading..."
+    : profileData && (
+        <Card className="m-auto py-10 p-8 mx-24">
+          {success && <SuccessAlert message={success} />}
+          {error && <ErrorAlert message={error} />}
+          {JSON.stringify(profileData, null, 2)}
+        </Card>
+      )
 }
