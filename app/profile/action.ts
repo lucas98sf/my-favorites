@@ -10,9 +10,6 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 export async function authSpotify() {
   const supabase = createClient()
 
-  const identities = await supabase.auth.getUserIdentities()
-  console.log({ identities: JSON.stringify(identities, null, 2) })
-
   const redirectTo = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/auth/callback/spotify`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -74,7 +71,6 @@ export async function updateUserProfile(data: Partial<Profile & { user_id: strin
 
   if (error) {
     if (error.code === "23505") {
-      console.log(statusText)
       return {
         status: "error",
         message: "username already in use",
