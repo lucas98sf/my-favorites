@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (user) {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: "local" })
   }
 
   revalidatePath("/", "layout")

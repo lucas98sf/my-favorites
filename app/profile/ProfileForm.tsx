@@ -1,32 +1,50 @@
 "use client"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { User } from "@supabase/supabase-js"
 import { useCallback, useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
-import { authSpotify, getUserProfile, getUserSpotifyAccessToken, updateUserProfile } from "@/app/profile/action"
+import { authSpotify, getUserProfile, getUserSpotifyData, updateUserProfile } from "@/app/profile/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import { Database } from "@/supabase/database.types"
 
-type Profile = Database["public"]["Views"]["profiles_view"]["Row"]
-type SpotifyAccessToken = Database["public"]["Views"]["user_spotify_token_view"]["Row"]
+type Profile = Database["public"]["Tables"]["profiles"]["Row"]
+
+const profileSchema = z.object({
+  username: z.string().min(3).optional(),
+  full_name: z.string().min(3).optional(),
+  mal_username: z.string().min(3).optional(),
+  letterboxd_username: z.string().min(3).optional(),
+  backloggd_username: z.string().min(3).optional(),
+})
 
 export default function ProfileForm() {
   const supabase = createClient()
 
   const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   const [user, setUser] = useState<User | null>(null)
 
   //@todo: add form
-  const [profileData, setProfileData] = useState<Partial<Profile> | null>(null)
-  const [spotifyToken, setSpotifyToken] = useState<SpotifyAccessToken | null>(null)
+  const [spotifyToken, setSpotifyToken] = useState<string | null>(null)
+  const [spotifyData, setSpotifyData] = useState<string | null>(null)
   // const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  const profileForm = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    disabled: loading,
+    reValidateMode: "onBlur",
+  })
 
   const getUser = useCallback(async () => {
     setError(null)
@@ -45,25 +63,32 @@ export default function ProfileForm() {
     setSuccess(null)
 
     const result = await getUserProfile(user?.id as string)
-    const resultSpotifyToken = await getUserSpotifyAccessToken()
-    console.log({ resultSpotifyToken })
+    const resultSpotifyData = await getUserSpotifyData()
+    console.log({ resultSpotifyData })
 
     if (result.status === "error") {
       setError(result.message)
     }
-    if (resultSpotifyToken.status === "error") {
-      setError(resultSpotifyToken.message)
+    if (resultSpotifyData.status === "error") {
+      setError(resultSpotifyData.message)
     }
 
     if (result.status === "success") {
-      setProfileData(result.data)
+      profileForm.reset({
+        username: result.data.username ?? undefined,
+        full_name: result.data.full_name ?? undefined,
+        mal_username: result.data.mal_username ?? undefined,
+        letterboxd_username: result.data.letterboxd_username ?? undefined,
+        backloggd_username: result.data.backloggd_username ?? undefined,
+      })
+      setSpotifyToken(result.data.spotify_token)
     }
 
-    if (resultSpotifyToken.status === "success") {
-      setSpotifyToken(resultSpotifyToken.data as any)
+    if (resultSpotifyData.status === "success") {
+      setSpotifyData(resultSpotifyData.data as any)
     }
     setLoading(false)
-  }, [user?.id])
+  }, [profileForm, user?.id])
 
   useEffect(() => {
     if (!user) {
@@ -73,7 +98,7 @@ export default function ProfileForm() {
     }
   }, [user, getProfile, getUser])
 
-  const bla = useCallback(async () => {
+  const linkSpotify = useCallback(async () => {
     setLoading(true)
 
     await authSpotify()
@@ -83,18 +108,24 @@ export default function ProfileForm() {
 
   const updateProfile = useCallback(
     async (data: Partial<Profile>) => {
-      setLoading(true)
+      setUpdating(true)
       setError(null)
       setSuccess(null)
 
       const result = await updateUserProfile({ ...data, user_id: user?.id as string })
       if (result.status === "error") {
-        setError(result.message)
+        if (result.code === "Conflict") {
+          profileForm.setError("username", {
+            message: result.message,
+            type: "manual",
+          })
+        } else {
+          setError(result.message)
+        }
       }
-
-      setLoading(false)
+      setUpdating(false)
     },
-    [user?.id]
+    [profileForm, user?.id]
   )
 
   return loading ? (
@@ -107,72 +138,100 @@ export default function ProfileForm() {
         <label htmlFor="email">Email</label>
         <Input id="email" type="text" value={user?.email} disabled />
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-4 justify-around">
-          <div>
-            <label htmlFor="username">Username</label>
-            <Input
-              id="username"
-              type="text"
-              value={profileData?.username || ""}
-              onChange={e => setProfileData({ ...profileData, username: e.target.value as string })}
-            />
-          </div>
-          <div>
-            <label htmlFor="fullName">Full Name</label>
-            <Input
-              id="fullName"
-              type="text"
-              value={profileData?.full_name || ""}
-              onChange={e => setProfileData({ ...profileData, full_name: e.target.value })}
-            />
-          </div>
-          <div className="flex flex-col">
-            <label>Spotify</label>
-            <Button
-              variant="outline"
-              className={profileData?.spotify_linked ? "text-green-600" : "text-red-600"}
-              //@todo: add unlink
-              onClick={_ => bla()}
-              // disabled={loading || !!profileData?.spotify_linked}
-            >
-              {profileData?.spotify_linked ? "Linked" : "Not linked"}
+      <Form {...profileForm}>
+        <form key="login" onSubmit={profileForm.handleSubmit(updateProfile)}>
+          <CardContent>
+            <div className="flex flex-col gap-4 justify-around">
+              <FormField
+                control={profileForm.control}
+                name="username"
+                disabled={loading}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input type="text" autoComplete="username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={profileForm.control}
+                name="full_name"
+                disabled={loading}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full name</FormLabel>
+                    <FormControl>
+                      <Input type="text" autoComplete="given-name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex flex-col">
+                <label>Spotify</label>
+                <Button
+                  variant="outline"
+                  className={spotifyToken ? "text-green-600" : "text-red-600"}
+                  //@todo: add unlink
+                  onClick={linkSpotify}
+                >
+                  {spotifyToken ? "Linked" : "Not linked"}
+                </Button>
+              </div>
+              <FormField
+                control={profileForm.control}
+                name="mal_username"
+                disabled={loading}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>My Anime List username</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={profileForm.control}
+                name="letterboxd_username"
+                disabled={loading}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Letterboxd username</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={profileForm.control}
+                name="backloggd_username"
+                disabled={loading}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Backloggd username</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button className="mt-5" type="submit" disabled={updating || !profileForm.formState.isDirty}>
+              {updating ? "Updating..." : "Update"}
             </Button>
-          </div>
-          <div>
-            <label htmlFor="malUsername">My Anime List Username</label>
-            <Input
-              id="malUsername"
-              type="url"
-              value={profileData?.mal_username || ""}
-              onChange={e => setProfileData({ ...profileData, mal_username: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="letterboxdUsername">Letterboxd Username</label>
-            <Input
-              id="letterboxdUsername"
-              type="url"
-              value={profileData?.letterboxd_username || ""}
-              onChange={e => setProfileData({ ...profileData, letterboxd_username: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="backloggdUsername">Backloggd Username</label>
-            <Input
-              id="backloggdUsername"
-              type="url"
-              value={profileData?.backloggd_username || ""}
-              onChange={e => setProfileData({ ...profileData, backloggd_username: e.target.value })}
-            />
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button className="mt-5" onClick={() => updateProfile(profileData as Partial<Profile>)} disabled={loading}>
-          {loading ? "Loading..." : "Update"}
-        </Button>
-      </CardFooter>
+          </CardFooter>
+        </form>
+      </Form>
     </Card>
   )
 }

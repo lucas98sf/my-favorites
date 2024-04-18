@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
 import { Database } from "@/supabase/database.types"
 
-type Profile = Database["public"]["Views"]["profiles_view"]["Row"]
+type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
 export default function Profile() {
   const params = useSearchParams()
@@ -48,7 +48,7 @@ export default function Profile() {
       setError(null)
       setSuccess(null)
 
-      const { data, error, status } = await supabase.from("profiles_view").select("*").eq("user_id", user?.id).single()
+      const { data, error, status } = await supabase.from("profiles").select("*").eq("user_id", user?.id).single()
 
       if (error && status !== 406) {
         console.log(error)

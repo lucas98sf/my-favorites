@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { Database } from "@/supabase/database.types"
 
-export type Profile = Database["public"]["Views"]["profiles_view"]["Row"]
+export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
 export async function authSpotify() {
   const supabase = createClient()
@@ -19,6 +19,7 @@ export async function authSpotify() {
     provider: "spotify",
     options: {
       redirectTo,
+      scopes: "user-read-email user-read-private",
       queryParams: {
         grant_type: "authorization_code",
       },
@@ -39,7 +40,7 @@ export async function authSpotify() {
 export async function getUserProfile(user_id: string): Promise<Result<Profile>> {
   const supabase = createClient()
 
-  const { data, error, status } = await supabase.from("profiles_view").select("*").eq("user_id", user_id).single()
+  const { data, error, status } = await supabase.from("profiles").select("*").eq("user_id", user_id).single()
 
   if (error && status !== 406) {
     console.error(error)
@@ -58,50 +59,47 @@ export async function getUserProfile(user_id: string): Promise<Result<Profile>> 
   }
 }
 
-export async function getUserSpotifyAccessToken(): Promise<Result<string>> {
+export async function getUserSpotifyData(): Promise<Result<string>> {
   try {
     const supabase = createClient()
 
-    const { data, error, status } = await supabase.from("user_spotify_token_view").select("*").single()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    console.log({ data, error, status })
+    const { data, error, statusText } = await supabase
+      .from("profiles")
+      .select("spotify_token")
+      .eq("user_id", user?.id)
+      .single()
 
-    if (error && status !== 406) {
+    if (error) {
       console.error(error)
-    }
-
-    if (data) {
-      const expireDate = new Date(data.auth_code_issued_at).setHours(new Date(data.auth_code_issued_at).getHours() + 1)
-      if (expireDate < new Date().getTime()) {
-        // const { data: newSessionData, error: newSessionError } = await supabase.auth.setSession({
-        //   access_token: data.provider_access_token,
-        //   refresh_token: data.provider_refresh_token,
-        // })
-
-        // console.log({ newSessionData, newSessionError })
-
-        const { data: refreshedData, error: refreshSessionError } = await supabase.auth.refreshSession({
-          refresh_token: data.provider_refresh_token,
-        })
-
-        console.log({ refreshedData, refreshSessionError })
-
-        if (error && status !== 406) {
-          console.error(error)
-        }
-        return {
-          status: "success",
-          data: refreshedData?.session?.access_token as string,
-        }
-      }
-
       return {
-        status: "success",
-        data: data.access_token,
+        status: "error",
+        message: "There was an error updating your profile",
+        code: statusText,
       }
     }
 
-    throw new Error("No spotify token found")
+    const spotifyData = await fetch("https://api.spotify.com/v1/me", {
+      headers: {
+        Authorization: `Bearer ${data?.spotify_token}`,
+      },
+    })
+      .then(res => res.json())
+      .catch(error => {
+        console.error(error)
+        return {
+          status: "error",
+          message: "There was an error fetching your spotify data",
+        }
+      })
+
+    return {
+      status: "success",
+      data: JSON.stringify(spotifyData, null, 2) as string,
+    }
   } catch (error) {
     console.error(error)
     return {
@@ -112,9 +110,10 @@ export async function getUserSpotifyAccessToken(): Promise<Result<string>> {
 }
 
 export async function updateUserProfile(data: Partial<Profile & { user_id: string }>): Promise<Result> {
+  console.log("!!!")
   const supabase = createClient()
 
-  const { error, status } = await supabase.from("profiles").upsert(
+  const { error, statusText } = await supabase.from("profiles").upsert(
     {
       user_id: data?.user_id,
       ...data,
@@ -124,13 +123,20 @@ export async function updateUserProfile(data: Partial<Profile & { user_id: strin
     }
   )
 
-  //@todo: handle username already in use
-
   if (error) {
+    if (error.code === "23505") {
+      console.log(statusText)
+      return {
+        status: "error",
+        message: "username already in use",
+        code: statusText,
+      }
+    }
     console.error(error)
     return {
       status: "error",
       message: "There was an error updating your profile",
+      code: statusText,
     }
   }
 

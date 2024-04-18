@@ -10,7 +10,11 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = createClient()
-    await supabase.auth.exchangeCodeForSession(code)
+    const {
+      data: { session },
+    } = await supabase.auth.exchangeCodeForSession(code)
+
+    await supabase.from("profiles").update({ spotify_token: session?.provider_token }).eq("user_id", session?.user.id)
   }
 
   return redirect(origin)
