@@ -2,6 +2,7 @@
 import { User } from "@supabase/supabase-js"
 import Image from "next/image"
 import { redirect, useSearchParams } from "next/navigation"
+import { useTheme } from "next-themes"
 import { useCallback, useEffect, useState } from "react"
 
 import { getUserData } from "@/app/action"
@@ -61,29 +62,6 @@ export default function Profile() {
   }, [])
 
   useEffect(() => {
-    //@ts-ignore
-    window.onSpotifyIframeApiReady = IFrameAPI => {
-      profileData.spotifyData.forEach((track: any) => {
-        const element = document.getElementById("embed-iframe")
-        const options = {
-          width: "100%",
-          height: "100",
-          uri: track.uri,
-        }
-        const callback = (EmbedController: any) => {
-          document.querySelectorAll(".track").forEach(track => {
-            track.addEventListener("click", () => {
-              //@ts-ignore
-              EmbedController.loadUri(track.dataset.spotifyId)
-            })
-          })
-        }
-        IFrameAPI?.createController(element, options, callback)
-      })
-    }
-  }, [profileData?.spotifyData])
-
-  useEffect(() => {
     if (!user) {
       getUser()
     } else {
@@ -108,14 +86,22 @@ export default function Profile() {
               <h1 className="text-3xl font-bold">{profileData.username}</h1>
               <span className="mb-6">{profileData.full_name}</span>
               <div className="tracks flex flex-col gap-2">
+                <span>Top track&apos;s</span>
                 {profileData.spotifyData?.map((track: any, index: number) => (
-                  <button key={index} className="track" data-spotify-id={track.uri}>
-                    <span>{track.name}</span>
-                  </button>
+                  <iframe
+                    key={index}
+                    src={`https://open.spotify.com/embed/track/${track.id}`}
+                    style={{
+                      borderRadius: "14px",
+                    }}
+                    width="600"
+                    height="152"
+                    frameBorder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                  />
                 ))}
-                <div id="embed-iframe" />
               </div>
-              <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
             </div>
           </div>
         </Card>
