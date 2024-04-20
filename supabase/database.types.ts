@@ -10,7 +10,6 @@ export type Database = {
           full_name: string | null
           letterboxd_username: string | null
           mal_username: string | null
-          spotify_token: string | null
           user_id: string
           username: string | null
         }
@@ -20,7 +19,6 @@ export type Database = {
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
-          spotify_token?: string | null
           user_id?: string
           username?: string | null
         }
@@ -30,13 +28,44 @@ export type Database = {
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
-          spotify_token?: string | null
           user_id?: string
           username?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "public_profile_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spotify_data: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          expires_at: string | null
+          refresh_token: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          expires_at?: string | null
+          refresh_token?: string | null
+          user_id?: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          expires_at?: string | null
+          refresh_token?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_spotify_data_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "users"

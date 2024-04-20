@@ -34,7 +34,7 @@ export default function ProfileForm() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const [user, setUser] = useState<User | null>(null)
-  const [spotifyToken, setSpotifyToken] = useState<string | null>(null)
+  const [spotifyLinked, setSpotifyLinked] = useState<boolean>(false)
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -72,7 +72,7 @@ export default function ProfileForm() {
         letterboxd_username: result.data.letterboxd_username ?? undefined,
         backloggd_username: result.data.backloggd_username ?? undefined,
       })
-      setSpotifyToken(result.data.spotify_token)
+      setSpotifyLinked(result.data.spotify_linked)
     }
 
     setLoading(false)
@@ -162,11 +162,11 @@ export default function ProfileForm() {
                 <label>Spotify</label>
                 <Button
                   variant="outline"
-                  className={spotifyToken ? "text-green-600" : "text-red-600"}
+                  className={spotifyLinked ? "text-green-600" : "text-red-600"}
                   //@todo: add unlink
                   onClick={linkSpotify}
                 >
-                  {spotifyToken ? "Linked" : "Not linked"}
+                  {spotifyLinked ? "Linked" : "Not linked"}
                 </Button>
               </div>
               <FormField

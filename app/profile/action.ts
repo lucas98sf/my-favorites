@@ -34,10 +34,11 @@ export async function authSpotify() {
   redirect(data.url)
 }
 
-export async function getUserProfile(user_id: string): Promise<Result<Profile>> {
+export async function getUserProfile(user_id: string): Promise<Result<Profile & { spotify_linked: boolean }>> {
   const supabase = createClient()
 
   const { data, error, status } = await supabase.from("profiles").select("*").eq("user_id", user_id).single()
+  const { data: spotifyData } = await supabase.from("spotify_data").select("expires_at").eq("user_id", user_id).single()
 
   if (error && status !== 406) {
     console.error(error)
@@ -46,7 +47,10 @@ export async function getUserProfile(user_id: string): Promise<Result<Profile>> 
   if (data) {
     return {
       status: "success",
-      data,
+      data: {
+        ...data,
+        spotify_linked: !!spotifyData,
+      },
     }
   } else {
     return {

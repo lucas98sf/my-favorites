@@ -13,8 +13,24 @@ export async function GET(request: NextRequest) {
     const {
       data: { session },
     } = await supabase.auth.exchangeCodeForSession(code)
-    await supabase.auth.startAutoRefresh()
-    await supabase.from("profiles").update({ spotify_token: session?.provider_token }).eq("user_id", session?.user.id)
+    const { error } = await supabase
+      .from("spotify_data")
+      .upsert(
+        {
+          access_token: session?.provider_token,
+          refresh_token: session?.provider_refresh_token,
+          expires_at: session?.expires_at,
+        },
+        {
+          onConflict: "user_id",
+        }
+      )
+      .eq("user_id", session?.user.id)
+
+    if (error) {
+      console.error(error)
+      return redirect(`${origin}/error`)
+    }
   }
 
   return redirect(origin)

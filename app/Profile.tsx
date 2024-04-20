@@ -1,8 +1,6 @@
 "use client"
 import { User } from "@supabase/supabase-js"
-import Image from "next/image"
 import { redirect, useSearchParams } from "next/navigation"
-import { useTheme } from "next-themes"
 import { useCallback, useEffect, useState } from "react"
 
 import { getUserData } from "@/app/action"
@@ -86,7 +84,7 @@ export default function Profile() {
               <h1 className="text-3xl font-bold">{profileData.username}</h1>
               <span className="mb-6">{profileData.full_name}</span>
               <div className="tracks flex flex-col gap-2">
-                <span>Top track&apos;s</span>
+                <span>Favorite track&apos;s</span>
                 {profileData.spotifyData?.map((track: any, index: number) => (
                   <iframe
                     key={index}
