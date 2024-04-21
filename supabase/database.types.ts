@@ -3,6 +3,41 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      favorites: {
+        Row: {
+          animes: Json | null
+          created_at: string
+          games: Json | null
+          movies: Json | null
+          tracks: Json | null
+          user_id: string
+        }
+        Insert: {
+          animes?: Json | null
+          created_at?: string
+          games?: Json | null
+          movies?: Json | null
+          tracks?: Json | null
+          user_id?: string
+        }
+        Update: {
+          animes?: Json | null
+          created_at?: string
+          games?: Json | null
+          movies?: Json | null
+          tracks?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           backloggd_username: string | null
@@ -45,21 +80,21 @@ export type Database = {
         Row: {
           access_token: string | null
           created_at: string
-          expires_at: string | null
+          expires_at: number | null
           refresh_token: string | null
           user_id: string
         }
         Insert: {
           access_token?: string | null
           created_at?: string
-          expires_at?: string | null
+          expires_at?: number | null
           refresh_token?: string | null
           user_id?: string
         }
         Update: {
           access_token?: string | null
           created_at?: string
-          expires_at?: string | null
+          expires_at?: number | null
           refresh_token?: string | null
           user_id?: string
         }

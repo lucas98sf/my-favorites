@@ -1,5 +1,11 @@
 import Profile from "./Profile"
+import TrackList from "./TrackList"
 
 export default async function IndexPage() {
-  return <Profile />
+  return (
+    <div className="flex flex-row">
+      <Profile />
+      <TrackList />
+    </div>
+  )
 }

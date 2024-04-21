@@ -1,9 +1,10 @@
 "use client"
 import { User } from "@supabase/supabase-js"
+import { concat, take } from "lodash"
 import { redirect, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 
-import { getUserData } from "@/app/action"
+import { getFavorites, getSpotifyData, getUserData } from "@/app/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -24,6 +25,7 @@ export default function Profile() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [profileData, setProfileData] = useState<any | null>(null)
+  const [spotifyData, setSpotifyData] = useState<any | null>(null)
 
   const [user, setUser] = useState<User | null>(null)
 
@@ -56,6 +58,31 @@ export default function Profile() {
       setProfileData(profileData.data)
     }
 
+    const favoritesData = await getFavorites()
+    const spotifyData = await getSpotifyData(3)
+
+    if (favoritesData.status === "error") {
+      setError(favoritesData.message)
+      return
+    }
+
+    if (spotifyData.status === "error") {
+      setError(spotifyData.message)
+      return
+    }
+
+    setSpotifyData({
+      type: "tracks",
+      items: take(
+        concat(
+          favoritesData.data.items,
+          spotifyData.data.items.filter(
+            ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
+          )
+        ),
+        3
+      ),
+    })
     setLoading(false)
   }, [])
 
@@ -85,7 +112,7 @@ export default function Profile() {
               <span className="mb-6">{profileData.full_name}</span>
               <div className="tracks flex flex-col gap-2">
                 <span>Favorite track&apos;s</span>
-                {profileData.spotifyData?.map((track: any, index: number) => (
+                {spotifyData?.items?.map((track: any, index: number) => (
                   <iframe
                     key={index}
                     src={`https://open.spotify.com/embed/track/${track.id}`}
@@ -94,7 +121,6 @@ export default function Profile() {
                     }}
                     width="600"
                     height="152"
-                    frameBorder="0"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
                   />
