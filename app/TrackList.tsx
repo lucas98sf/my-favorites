@@ -19,7 +19,7 @@ export default function TrackList() {
     setSuccess(null)
 
     const favoritesData = await getFavorites()
-    const spotifyData = await getSpotifyData(30)
+    const spotifyData = await getSpotifyData(50)
 
     if (spotifyData.status === "error") {
       setError(spotifyData.message)
@@ -41,7 +41,7 @@ export default function TrackList() {
               ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
             )
           ),
-          30
+          50
         ),
       })
     }

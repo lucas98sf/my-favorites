@@ -1,6 +1,6 @@
 "use client"
 import { MagnifyingGlassIcon, StarFilledIcon, StarIcon } from "@radix-ui/react-icons"
-import { concat, debounce, take, takeRight, truncate } from "lodash"
+import { concat, debounce, take, truncate } from "lodash"
 import Image from "next/image"
 import { type FC, useCallback, useEffect, useState } from "react"
 
@@ -59,7 +59,7 @@ const List: FC<ListProps> = ({ data: givenData }) => {
               async e => {
                 if (e.target.value === "") {
                   const favoritesData = await getFavorites()
-                  const spotifyData = await getSpotifyData(30)
+                  const spotifyData = await getSpotifyData(50)
 
                   if (favoritesData.status === "error") {
                     console.error(favoritesData.message)
@@ -80,7 +80,7 @@ const List: FC<ListProps> = ({ data: givenData }) => {
                           ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
                         )
                       ),
-                      30
+                      50
                     ),
                   })
                 }
@@ -135,10 +135,10 @@ const List: FC<ListProps> = ({ data: givenData }) => {
           />
           {searching && <MagnifyingGlassIcon className="w-6 h-6 text-gray-400" />}
         </div>
-        <ScrollArea className="h-[60vh] w-200 p-4">
+        <ScrollArea className="h-[60vh] p-4">
           <ul>
             {data.items.map(item => (
-              <li key={item.id} className="flex flex-col">
+              <li key={item.id} className="flex flex-col w-[250px]">
                 <div className="flex flex-row">
                   {favorites?.some(favorite => favorite === item.id) ? (
                     <StarFilledIcon
@@ -149,11 +149,7 @@ const List: FC<ListProps> = ({ data: givenData }) => {
                     <StarIcon className="w-8 h-8 text-yellow-400" onClick={() => favoriteUserItem(item.id, "tracks")} />
                   )}
                   <div className="ml-2">
-                    <p>
-                      {truncate(item.title, {
-                        length: 30,
-                      })}
-                    </p>
+                    <p className="max-w-52 max-h-12 overflow-ellipsis line-clamp-2">{item.title}</p>
                     <p className="text-sm text-gray-500">
                       {truncate(item.description, {
                         length: 30,
@@ -164,8 +160,8 @@ const List: FC<ListProps> = ({ data: givenData }) => {
                 <Image
                   src={item.image}
                   alt={item.title}
-                  width="200"
-                  height="200"
+                  width="250"
+                  height="250"
                   style={{
                     borderRadius: "10%",
                     marginBottom: "2rem",

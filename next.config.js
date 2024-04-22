@@ -1,5 +1,13 @@
+const million = require("million/compiler")
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    turbo: {
+      resolveExtensions: [".mdx", ".tsx", ".ts", ".jsx", ".js", ".mjs", ".json"],
+    },
+  },
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
@@ -11,4 +19,10 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+const millionConfig = {
+  auto: {
+    rsc: true,
+  },
+}
+
+module.exports = million.next(nextConfig, millionConfig)
