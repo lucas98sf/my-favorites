@@ -1,6 +1,6 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { EnvelopeOpenIcon } from "@radix-ui/react-icons"
+import { EnvelopeOpenIcon, SpeakerLoudIcon } from "@radix-ui/react-icons"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -11,9 +11,9 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Result } from "@/lib/types"
-import { loginSchema, LoginUser, signUpSchema, SignUpUser } from "@/lib/user"
+import { loginSchema, LoginUser, signUpSchema, SignUpUser } from "@/lib/types"
 
-import { login, signInWithGoogle, signUp } from "./action"
+import { login, signInWithGoogle, signInWithSpotify, signUp } from "./action"
 
 export default function LoginForm() {
   const [mode, setMode] = useState<"login" | "signUp">("login")
@@ -103,16 +103,40 @@ export default function LoginForm() {
     setLoading(false)
   }
 
+  const handleSpotifySubmit = async () => {
+    setLoading(true)
+    setError(false)
+
+    signInWithSpotify()
+      .then((result: Result) => {
+        if (result?.status === "error") {
+          setError(true)
+        }
+      })
+      .catch(() => {
+        setError(true)
+      })
+
+    setLoading(false)
+  }
+
   return (
     <Card className="m-auto py-10 p-8">
       {error && <ErrorAlert />}
       <CardHeader>
         <h1 className="text-2xl font-bold">{mode === "login" ? "Login" : "Sign Up"}</h1>
-        <form onSubmit={handleGoogleSubmit}>
-          <Button disabled={loading} type="submit">
-            <EnvelopeOpenIcon className="mr-2 h-4 w-4" /> SignIn with Google
-          </Button>
-        </form>
+        <div className="flex flex-col gap-3">
+          <form onSubmit={handleGoogleSubmit}>
+            <Button disabled={loading} type="submit" className="w-[100%]">
+              <EnvelopeOpenIcon className="mr-2 h-4 w-4" /> SignIn with Google
+            </Button>
+          </form>
+          <form onSubmit={handleSpotifySubmit}>
+            <Button disabled={loading} type="submit" className="w-[100%]">
+              <SpeakerLoudIcon className="mr-2 h-4 w-4" /> SignIn with Spotify
+            </Button>
+          </form>
+        </div>
       </CardHeader>
       {mode === "login" ? (
         <Form {...loginForm}>
@@ -152,7 +176,7 @@ export default function LoginForm() {
                 <Button
                   disabled={loading}
                   variant="secondary"
-                  onClick={e => {
+                  onClick={_ => {
                     setMode("signUp")
                     signUpForm.reset()
                     setError(false)

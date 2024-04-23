@@ -2,10 +2,10 @@ import { HomeIcon } from "@radix-ui/react-icons"
 
 import { ModeToggle } from "@/components/ModeToggle"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/server"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export const NavBar = async () => {
-  const supabase = createClient()
+  const supabase = createSupabaseServerClient()
 
   const { data } = await supabase.auth.getUser()
 

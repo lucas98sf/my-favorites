@@ -4,13 +4,15 @@ import { FC, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { authSpotify, updateUserProfile } from "@/app/profile/action"
+import { signInWithSpotify } from "@/app/login/action"
+import { updateUserProfile } from "@/app/profile/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import useSupabaseBrowser from "@/lib/supabase/browser"
 import { Database } from "@/supabase/database.types"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
@@ -29,6 +31,7 @@ interface ProfileFormProps {
 }
 
 const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
+  const supabase = useSupabaseBrowser()
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -43,7 +46,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   const linkSpotify = useCallback(async () => {
     setUpdating(true)
 
-    await authSpotify()
+    await signInWithSpotify()
 
     setUpdating(false)
   }, [])
@@ -54,7 +57,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       setError(null)
       setSuccess(null)
 
-      const result = await updateUserProfile({ ...data, user_id: user?.id as string })
+      const result = await updateUserProfile(supabase, { ...data, user_id: user?.id as string })
       if (result.status === "error") {
         if (result.code === "Conflict") {
           profileForm.setError("username", {
@@ -67,7 +70,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       }
       setUpdating(false)
     },
-    [profileForm, user?.id]
+    [profileForm, supabase, user?.id]
   )
 
   return (

@@ -4,12 +4,12 @@ import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { createClient } from "@/lib/supabase/server"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
-import { LoginUser, SignUpUser } from "@/lib/user"
+import { LoginUser, SignUpUser } from "@/lib/types"
 
 export async function login(formData: LoginUser): Promise<Result> {
-  const supabase = createClient()
+  const supabase = createSupabaseServerClient()
 
   const { error } = await supabase.auth.signInWithPassword({
     email: formData.email,
@@ -30,7 +30,7 @@ export async function login(formData: LoginUser): Promise<Result> {
 }
 
 export async function signUp(formData: SignUpUser): Promise<Result> {
-  const supabase = createClient()
+  const supabase = createSupabaseServerClient()
   const origin = headers().get("origin")
 
   const { error } = await supabase.auth.signUp({
@@ -58,7 +58,7 @@ export async function signUp(formData: SignUpUser): Promise<Result> {
 }
 
 export async function signInWithGoogle(): Promise<Result> {
-  const supabase = createClient()
+  const supabase = createSupabaseServerClient()
 
   const redirectTo = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/auth/callback`
 
@@ -70,6 +70,32 @@ export async function signInWithGoogle(): Promise<Result> {
         prompt: "consent",
       },
       redirectTo,
+    },
+  })
+
+  if (error) {
+    console.error(error)
+    return {
+      status: "error",
+      message: "An error occurred",
+    }
+  }
+
+  redirect(data.url)
+}
+
+export async function signInWithSpotify(): Promise<Result> {
+  const client = createSupabaseServerClient()
+  const redirectTo = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/auth/callback/spotify`
+
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: "spotify",
+    options: {
+      redirectTo,
+      scopes: "user-read-email user-read-private user-top-read",
+      queryParams: {
+        grant_type: "authorization_code",
+      },
     },
   })
 

@@ -1,24 +1,30 @@
 import { concat, take } from "lodash"
 
-import { getFavorites, getSpotifyData, getUserData } from "@/app/action"
-import List from "@/app/List"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { getFavorites } from "@/queries/favorites"
+import { getProfileData } from "@/queries/profiles"
+import { getSpotifyData } from "@/queries/spotify"
 
 import Profile from "./Profile"
 
 export default async function IndexPage() {
-  const profileData = await getUserData()
-  const favoritesData = await getFavorites()
-  const spotifyData = await getSpotifyData(3)
+  const supabase = createSupabaseServerClient()
+  const profileData = await getProfileData(supabase)
+  const favoritesData = await getFavorites(supabase)
+  const spotifyData = await getSpotifyData(supabase, 3)
 
   if (profileData.status === "error") {
+    console.log(profileData.message)
     return
   }
 
   if (favoritesData.status === "error") {
+    console.log(favoritesData.message)
     return
   }
 
   if (spotifyData.status === "error") {
+    console.log(spotifyData.message)
     return
   }
 
@@ -38,21 +44,6 @@ export default async function IndexPage() {
             3
           ),
         }}
-      />
-      <List
-        data={{
-          type: "tracks",
-          items: take(
-            concat(
-              favoritesData.data.items,
-              spotifyData.data.items.filter(
-                ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
-              )
-            ),
-            50
-          ),
-        }}
-        favorites={favoritesData.data.items.map(({ id }) => id)}
       />
     </div>
   )

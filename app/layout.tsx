@@ -1,11 +1,9 @@
 import "./globals.css"
 
 import { Sono as FontSans } from "next/font/google"
-import { Suspense } from "react"
 
 import { NavBar } from "@/components/NavBar"
 import { ThemeProvider } from "@/components/ThemeProvider"
-import { Skeleton } from "@/components/ui/skeleton"
 
 const defaultUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
 
@@ -23,10 +21,10 @@ const fontSans = FontSans({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={fontSans.className}>
+    <html lang="en" className={fontSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
         <ThemeProvider
-          themes={["pink", "red", "blue", "light", "dark"]}
+          themes={["light", "dark"]}
           attribute="class"
           defaultTheme="system"
           enableColorScheme

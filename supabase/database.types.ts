@@ -5,27 +5,27 @@ export type Database = {
     Tables: {
       favorites: {
         Row: {
-          animes: Json | null
+          animes: string[]
           created_at: string
-          games: Json | null
-          movies: Json | null
-          tracks: Json | null
+          games: string[]
+          movies: string[]
+          tracks: string[]
           user_id: string
         }
         Insert: {
-          animes?: Json | null
+          animes?: string[]
           created_at?: string
-          games?: Json | null
-          movies?: Json | null
-          tracks?: Json | null
+          games?: string[]
+          movies?: string[]
+          tracks?: string[]
           user_id?: string
         }
         Update: {
-          animes?: Json | null
+          animes?: string[]
           created_at?: string
-          games?: Json | null
-          movies?: Json | null
-          tracks?: Json | null
+          games?: string[]
+          movies?: string[]
+          tracks?: string[]
           user_id?: string
         }
         Relationships: [
