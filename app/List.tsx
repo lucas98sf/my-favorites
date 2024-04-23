@@ -20,23 +20,13 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface ListProps {
   data: Data
+  favorites: string[]
 }
 
-const List: FC<ListProps> = ({ data: givenData }) => {
+const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => {
   const [data, setData] = useState(givenData)
   const [searching, setSearching] = useState(false)
-  const [favorites, setFavorites] = useState<string[]>([])
-
-  const getUserFavorites = useCallback(async () => {
-    const favorites = await getFavorites()
-    if (favorites.status === "success") {
-      setFavorites(favorites.data.items.map(item => item.id) as string[])
-    }
-  }, [])
-
-  useEffect(() => {
-    getUserFavorites()
-  }, [getUserFavorites])
+  const [favorites, setFavorites] = useState<string[]>(givenFavorites)
 
   const favoriteUserItem = useCallback(
     async (id: string, type: FavoriteType, action: "add" | "remove" = "add") => {
@@ -140,7 +130,7 @@ const List: FC<ListProps> = ({ data: givenData }) => {
             {data.items.map(item => (
               <li key={item.id} className="flex flex-col w-[250px]">
                 <div className="flex flex-row">
-                  {favorites?.some(favorite => favorite === item.id) ? (
+                  {favorites?.includes(item.id) ? (
                     <StarFilledIcon
                       className="w-8 h-8 text-yellow-400"
                       onClick={() => favoriteUserItem(item.id, "tracks", "remove")}

@@ -34,7 +34,7 @@ export async function authSpotify() {
   redirect(data.url)
 }
 
-export async function getUserProfile(user_id: string): Promise<Result<Profile & { spotify_linked: boolean }>> {
+export async function getUserProfile(user_id: string): Promise<Result<Partial<Profile> & { spotify_linked: boolean }>> {
   const supabase = createClient()
 
   const { data, error, status } = await supabase.from("profiles").select("*").eq("user_id", user_id).single()
@@ -65,8 +65,8 @@ export async function updateUserProfile(data: Partial<Profile & { user_id: strin
 
   const { error, statusText } = await supabase.from("profiles").upsert(
     {
-      user_id: data?.user_id,
       ...data,
+      user_id: data?.user_id,
     },
     {
       onConflict: "user_id",

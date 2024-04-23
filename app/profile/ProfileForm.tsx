@@ -1,18 +1,16 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { User } from "@supabase/supabase-js"
-import { useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { authSpotify, getUserProfile, updateUserProfile } from "@/app/profile/action"
+import { authSpotify, updateUserProfile } from "@/app/profile/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { createClient } from "@/lib/supabase/client"
 import { Database } from "@/supabase/database.types"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
@@ -25,73 +23,29 @@ const profileSchema = z.object({
   backloggd_username: z.string().min(3).optional(),
 })
 
-export default function ProfileForm() {
-  const supabase = createClient()
+interface ProfileFormProps {
+  user: z.infer<typeof profileSchema> & { email: string; id: string }
+  spotifyLinked: boolean
+}
 
-  const [loading, setLoading] = useState(true)
+const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const [user, setUser] = useState<User | null>(null)
-  const [spotifyLinked, setSpotifyLinked] = useState<boolean>(false)
-
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
-    disabled: loading,
+    disabled: updating,
+    defaultValues: user,
     reValidateMode: "onBlur",
   })
 
-  const getUser = useCallback(async () => {
-    setError(null)
-    setSuccess(null)
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    setUser(user)
-  }, [supabase])
-
-  const getProfile = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    setSuccess(null)
-
-    const result = await getUserProfile(user?.id as string)
-
-    if (result.status === "error") {
-      setError(result.message)
-    }
-
-    if (result.status === "success") {
-      profileForm.reset({
-        username: result.data.username ?? undefined,
-        full_name: result.data.full_name ?? undefined,
-        mal_username: result.data.mal_username ?? undefined,
-        letterboxd_username: result.data.letterboxd_username ?? undefined,
-        backloggd_username: result.data.backloggd_username ?? undefined,
-      })
-      setSpotifyLinked(result.data.spotify_linked)
-    }
-
-    setLoading(false)
-  }, [profileForm, user?.id])
-
-  useEffect(() => {
-    if (!user) {
-      getUser()
-    } else {
-      getProfile()
-    }
-  }, [user, getProfile, getUser])
-
   const linkSpotify = useCallback(async () => {
-    setLoading(true)
+    setUpdating(true)
 
     await authSpotify()
 
-    setLoading(false)
+    setUpdating(false)
   }, [])
 
   const updateProfile = useCallback(
@@ -116,9 +70,7 @@ export default function ProfileForm() {
     [profileForm, user?.id]
   )
 
-  return loading ? (
-    <div>Loading...</div>
-  ) : (
+  return (
     <Card className="m-auto py-10 p-8">
       {success && <SuccessAlert message={success} />}
       {error && <ErrorAlert message={error} />}
@@ -133,7 +85,7 @@ export default function ProfileForm() {
               <FormField
                 control={profileForm.control}
                 name="username"
-                disabled={loading}
+                disabled={updating}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Username</FormLabel>
@@ -147,7 +99,7 @@ export default function ProfileForm() {
               <FormField
                 control={profileForm.control}
                 name="full_name"
-                disabled={loading}
+                disabled={updating}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Full name</FormLabel>
@@ -172,7 +124,7 @@ export default function ProfileForm() {
               <FormField
                 control={profileForm.control}
                 name="mal_username"
-                disabled={loading}
+                disabled={updating}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>My Anime List username</FormLabel>
@@ -186,7 +138,7 @@ export default function ProfileForm() {
               <FormField
                 control={profileForm.control}
                 name="letterboxd_username"
-                disabled={loading}
+                disabled={updating}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Letterboxd username</FormLabel>
@@ -200,7 +152,7 @@ export default function ProfileForm() {
               <FormField
                 control={profileForm.control}
                 name="backloggd_username"
-                disabled={loading}
+                disabled={updating}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Backloggd username</FormLabel>
@@ -223,3 +175,4 @@ export default function ProfileForm() {
     </Card>
   )
 }
+export default ProfileForm

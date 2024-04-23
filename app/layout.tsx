@@ -1,9 +1,11 @@
 import "./globals.css"
 
 import { Sono as FontSans } from "next/font/google"
+import { Suspense } from "react"
 
 import { NavBar } from "@/components/NavBar"
 import { ThemeProvider } from "@/components/ThemeProvider"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const defaultUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
 

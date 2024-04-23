@@ -238,7 +238,12 @@ export async function getSpotifyData(limit = 3): Promise<Result<Data>> {
   }
 }
 
-export async function getUserData(): Promise<Result<any>> {
+export type ProfileData = {
+  avatar_url: string
+  username: string
+  full_name: string
+}
+export async function getUserData(): Promise<Result<ProfileData>> {
   try {
     const supabase = createClient()
 
