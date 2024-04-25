@@ -67,8 +67,6 @@ const getSpotifyApiData = async (spotifyToken: string, limit: number) => {
 }
 
 export async function getSpotifyData(client: SupabaseClient, limit = 3): Promise<Result<Data>> {
-  let redirectUrl: string | null = null
-
   try {
     const spotifyToken = await getSpotifyToken(client)
 
@@ -82,26 +80,11 @@ export async function getSpotifyData(client: SupabaseClient, limit = 3): Promise
     let spotifyApiData = await getSpotifyApiData(spotifyToken.data.access_token as string, limit)
 
     if (!spotifyApiData || (spotifyApiData.status === "error" && spotifyApiData.code === "401")) {
-      const redirectTo = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/auth/callback/spotify`
-      const { data, error } = await client.auth.signInWithOAuth({
-        provider: "spotify",
-        options: {
-          redirectTo,
-          scopes: "user-read-email user-read-private user-top-read",
-          queryParams: {
-            grant_type: "authorization_code",
-          },
-        },
-      })
-
-      if (error) {
-        console.error(error)
-        return {
-          status: "error",
-          message: "An error occurred",
-        }
+      return {
+        status: "error",
+        message: "Spotify token expired",
+        code: "401",
       }
-      redirectUrl = data.url
     }
 
     if (spotifyApiData.status === "error") {
@@ -131,11 +114,6 @@ export async function getSpotifyData(client: SupabaseClient, limit = 3): Promise
     return {
       status: "error",
       message: "Could not find spotify data",
-    }
-  } finally {
-    if (redirectUrl) {
-      console.log("!!!!!!!!!!")
-      // redirect(redirectUrl)
     }
   }
 }

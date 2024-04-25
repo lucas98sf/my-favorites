@@ -121,7 +121,7 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
           />
           {searching && <MagnifyingGlassIcon className="w-6 h-6 text-gray-400" />}
         </div>
-        <ScrollArea className="h-[60vh] p-4">
+        <ScrollArea className="h-[70vh] p-4">
           <ul>
             {data.items.map(item => (
               <li key={item.id} className="flex flex-col w-[250px]">

@@ -1,5 +1,6 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Link1Icon, UpdateIcon } from "@radix-ui/react-icons"
 import { FC, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -14,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import useSupabaseBrowser from "@/lib/supabase/browser"
+import { cn } from "@/lib/utils"
 import { updateUserProfile } from "@/queries/profiles"
 import { Database } from "@/supabase/database.types"
 
@@ -110,12 +112,11 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   )
 
   return (
-    <Card className="m-auto py-10 p-8">
+    <Card className="m-auto py-10 p-6">
       {success && <SuccessAlert message={success} />}
       {error && <ErrorAlert message={error} />}
-
       <CardHeader>
-        <Avatar className="rounded-sm size-64 m-auto">
+        <Avatar className="rounded-sm size-32 m-auto">
           <AvatarImage src={avatarUrl} alt={user?.username ?? undefined} />
           <AvatarFallback>{(user?.full_name as string).split(" ").map(s => s[0].toUpperCase())}</AvatarFallback>
         </Avatar>
@@ -170,14 +171,20 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
               />
               <div className="flex flex-col">
                 <label>Spotify</label>
-                <Button
-                  variant="outline"
-                  className={spotifyLinked ? "text-green-600" : "text-red-600"}
-                  //@todo: add unlink
-                  onClick={linkSpotify}
-                >
-                  {spotifyLinked ? "Linked" : "Not linked"}
-                </Button>
+                <div className="flex flex-row gap-1">
+                  <Input
+                    disabled
+                    value={spotifyLinked ? "Linked" : "Not linked"}
+                    className={cn("text-center", spotifyLinked ? "text-green-600" : "text-red-600")}
+                  />
+                  <Button
+                    variant="outline"
+                    //@todo: add unlink
+                    onClick={linkSpotify}
+                  >
+                    {spotifyLinked ? <UpdateIcon className="w-4 h-4" /> : <Link1Icon className="w-4 h-4" />}
+                  </Button>
+                </div>
               </div>
               <FormField
                 control={profileForm.control}

@@ -1,4 +1,5 @@
 import { concat, take } from "lodash"
+import { redirect } from "next/navigation"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getFavorites } from "@/queries/favorites"
@@ -24,8 +25,7 @@ export default async function IndexPage() {
   }
 
   if (spotifyData.status === "error") {
-    console.log(spotifyData.message)
-    return
+    return <div>Spotify token expired. Please relink your Spotify account in your profile</div>
   }
 
   return (

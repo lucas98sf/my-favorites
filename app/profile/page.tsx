@@ -31,10 +31,6 @@ export default async function LoginPage() {
     return
   }
 
-  if (spotifyData.status === "error") {
-    return
-  }
-
   return (
     <div className="flex flex-row gap-6">
       <ProfileForm
@@ -47,24 +43,26 @@ export default async function LoginPage() {
           letterboxd_username: profileData.data.letterboxd_username ?? undefined,
           mal_username: profileData.data.mal_username ?? undefined,
           username: profileData.data.username ?? undefined,
-          avatar_url: profileData.data.avatar_url ?? undefined,
+          avatar_url: profileData.data.avatar_url as string,
         }}
       />
-      <List
-        data={{
-          type: "tracks",
-          items: take(
-            concat(
-              favoritesData.data.items,
-              spotifyData.data.items.filter(
-                ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
-              )
+      {spotifyData.status !== "error" && (
+        <List
+          data={{
+            type: "tracks",
+            items: take(
+              concat(
+                favoritesData.data.items,
+                spotifyData.data.items.filter(
+                  ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
+                )
+              ),
+              50
             ),
-            50
-          ),
-        }}
-        favorites={favoritesData.data.items.map(({ id }) => id)}
-      />
+          }}
+          favorites={favoritesData.data.items.map(({ id }) => id)}
+        />
+      )}
     </div>
   )
 }
