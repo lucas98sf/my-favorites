@@ -47,6 +47,7 @@ export default async function LoginPage() {
           letterboxd_username: profileData.data.letterboxd_username ?? undefined,
           mal_username: profileData.data.mal_username ?? undefined,
           username: profileData.data.username ?? undefined,
+          avatar_url: profileData.data.avatar_url ?? undefined,
         }}
       />
       <List

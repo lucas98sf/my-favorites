@@ -5,14 +5,16 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { signInWithSpotify } from "@/app/login/action"
-import { updateUserProfile } from "@/app/profile/action"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { SuccessAlert } from "@/components/SuccessAlert"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import useSupabaseBrowser from "@/lib/supabase/browser"
+import { updateUserProfile } from "@/queries/profiles"
 import { Database } from "@/supabase/database.types"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
@@ -26,7 +28,7 @@ const profileSchema = z.object({
 })
 
 interface ProfileFormProps {
-  user: z.infer<typeof profileSchema> & { email: string; id: string }
+  user: z.infer<typeof profileSchema> & { email: string; id: string; avatar_url: string }
   spotifyLinked: boolean
 }
 
@@ -35,6 +37,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(user.avatar_url)
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -50,6 +53,39 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
 
     setUpdating(false)
   }, [])
+
+  const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async event => {
+    try {
+      setUpdating(true)
+      setError(null)
+      setSuccess(null)
+
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error("You must select an image to upload.")
+      }
+
+      const file = event.target.files[0]
+      const filePath = `${user?.id}/${file.name}`
+
+      const { data, error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, {
+        upsert: true,
+      })
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      const url = supabase.storage.from("avatars").getPublicUrl(data?.path as string).data?.publicUrl
+
+      await updateProfile({ avatar_url: url })
+
+      setAvatarUrl(url)
+    } catch (error) {
+      setError("Error uploading avatar!")
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   const updateProfile = useCallback(
     async (data: Partial<Profile>) => {
@@ -77,7 +113,26 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
     <Card className="m-auto py-10 p-8">
       {success && <SuccessAlert message={success} />}
       {error && <ErrorAlert message={error} />}
+
       <CardHeader>
+        <Avatar className="rounded-sm size-64 m-auto">
+          <AvatarImage src={avatarUrl} alt={user?.username ?? undefined} />
+          <AvatarFallback>{(user?.full_name as string).split(" ").map(s => s[0].toUpperCase())}</AvatarFallback>
+        </Avatar>
+        <Label className="text-right" htmlFor="upload">
+          {updating ? "Uploading ..." : "Upload avatar"}
+        </Label>
+        <Input
+          id="upload"
+          style={{
+            visibility: "hidden",
+            position: "absolute",
+          }}
+          type="file"
+          accept="image/*"
+          onChange={uploadAvatar}
+          disabled={updating}
+        />
         <label htmlFor="email">Email</label>
         <Input id="email" type="text" value={user?.email} disabled />
       </CardHeader>

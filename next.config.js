@@ -15,6 +15,11 @@ const nextConfig = {
         hostname: "i.scdn.co",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "ggzalqnaowvopihbidxf.supabase.co",
+        port: "",
+      },
     ],
   },
 }

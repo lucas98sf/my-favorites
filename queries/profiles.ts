@@ -80,7 +80,7 @@ export async function getProfileData(client: SupabaseClient): Promise<Result<Pro
 
     const { data, error, statusText } = await client
       .from("profiles")
-      .select("username, full_name")
+      .select("username, full_name, avatar_url")
       .eq("user_id", user?.id as string)
       .single()
 
@@ -96,7 +96,7 @@ export async function getProfileData(client: SupabaseClient): Promise<Result<Pro
     return {
       status: "success",
       data: {
-        avatar_url: user?.user_metadata?.avatar_url,
+        avatar_url: data?.avatar_url as string,
         username: data?.username,
         full_name: data?.full_name,
       },

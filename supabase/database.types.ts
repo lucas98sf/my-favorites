@@ -40,6 +40,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           backloggd_username: string | null
           created_at: string
           full_name: string | null
@@ -49,6 +50,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          avatar_url?: string | null
           backloggd_username?: string | null
           created_at?: string
           full_name?: string | null
@@ -58,6 +60,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          avatar_url?: string | null
           backloggd_username?: string | null
           created_at?: string
           full_name?: string | null
