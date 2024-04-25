@@ -2,13 +2,13 @@
 import { MagnifyingGlassIcon, StarFilledIcon, StarIcon } from "@radix-ui/react-icons"
 import { concat, debounce, take, truncate } from "lodash"
 import Image from "next/image"
-import { type FC, useCallback, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import useSupabaseBrowser from "@/lib/supabase/browser"
 import { Data, favoriteItem, FavoriteType, getFavorites, handleFavorites } from "@/queries/favorites"
 import { getSpotifyData, getSpotifyToken } from "@/queries/spotify"
 
@@ -21,90 +21,117 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
   const [data, setData] = useState(givenData)
   const [searching, setSearching] = useState(false)
   const [favorites, setFavorites] = useState<string[]>(givenFavorites)
-  const supabase = useSupabaseBrowser()
+  const [showClearButton, setShowClearButton] = useState(false)
+  const [search, setSearch] = useState<string>("")
 
   const favoriteUserItem = useCallback(
     async (id: string, type: FavoriteType, action: "add" | "remove" = "add") => {
       setFavorites((await handleFavorites({ currentData: { [type]: favorites }, id, type, action }))[type])
-      await favoriteItem(supabase, { id, type, action })
+      await favoriteItem({ id, type, action })
     },
-    [favorites, supabase]
+    [favorites]
   )
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSearch = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.value === "") {
-        const favoritesData = await getFavorites(supabase)
-        const spotifyData = await getSpotifyData(supabase, 50)
+    debounce(async searchValue => {
+      switch (givenData.type) {
+        case "tracks": {
+          if (searchValue === "") {
+            setSearching(true)
+            const favoritesData = await getFavorites()
+            const spotifyData = await getSpotifyData(50)
 
-        if (favoritesData.status === "error") {
-          console.error(favoritesData.message)
+            if (favoritesData.status === "error") {
+              console.error(favoritesData.message)
+              return
+            }
+
+            if (spotifyData.status === "error") {
+              console.error(spotifyData.message)
+              return
+            }
+
+            setData({
+              type: givenData.type,
+              items: take(
+                concat(
+                  favoritesData.data.items,
+                  spotifyData.data.items.filter(
+                    ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
+                  )
+                ),
+                50
+              ),
+            })
+            setSearching(false)
+          }
+
+          if (searchValue.length < 3) {
+            return
+          }
+
+          setSearching(true)
+
+          const spotifyToken = await getSpotifyToken()
+
+          if (spotifyToken.status === "error") {
+            return
+          }
+
+          const result = await fetch(
+            `https://api.spotify.com/v1/search?query=${searchValue}&type=track&offset=0&limit=10`,
+            {
+              headers: {
+                Authorization: `Bearer ${spotifyToken?.data?.access_token}`,
+              },
+            }
+          )
+            .then(res => res.json())
+            .catch(error => {
+              console.error(error)
+              return {
+                status: "error",
+                message: "There was an error fetching your spotify data",
+              }
+            })
+
+          setData({
+            type: "tracks",
+            items: result.tracks?.items?.map((sd: any) => {
+              return {
+                id: sd.id,
+                title: sd.name,
+                description: sd.artists?.[0]?.name,
+                image: sd.album?.images?.[0]?.url,
+              }
+            }),
+          })
+          setSearching(false)
+        }
+        case "movies": {
           return
         }
-
-        if (spotifyData.status === "error") {
-          console.error(spotifyData.message)
+        case "animes": {
           return
         }
-
-        setData({
-          type: givenData.type,
-          items: take(
-            concat(
-              favoritesData.data.items,
-              spotifyData.data.items.filter(
-                ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
-              )
-            ),
-            50
-          ),
-        })
-      }
-
-      if (e.target.value.length < 3) {
-        return
-      }
-
-      setSearching(true)
-
-      const spotifyToken = await getSpotifyToken(supabase)
-
-      if (spotifyToken.status === "error") {
-        return
-      }
-
-      const result = await fetch(
-        `https://api.spotify.com/v1/search?query=${e.target.value}&type=track&offset=0&limit=10`,
-        {
-          headers: {
-            Authorization: `Bearer ${spotifyToken?.data?.access_token}`,
-          },
+        case "games": {
+          return
         }
-      )
-        .then(res => res.json())
-        .catch(error => {
-          console.error(error)
-          return {
-            status: "error",
-            message: "There was an error fetching your spotify data",
-          }
-        })
-
-      setData({
-        type: "tracks",
-        items: result.tracks?.items?.map((sd: any) => {
-          return {
-            id: sd.id,
-            title: sd.name,
-            description: sd.artists?.[0]?.name,
-            image: sd.album?.images?.[0]?.url,
-          }
-        }),
-      })
-      setSearching(false)
-    },
-    [givenData.type, supabase]
+        default:
+          return givenData.type satisfies never
+      }
+    }, 1000),
+    [givenData.type]
   )
+
+  useEffect(() => {
+    if (search.length > 0) {
+      setShowClearButton(true)
+    } else {
+      setShowClearButton(false)
+    }
+  }, [search])
 
   return (
     <Card>
@@ -114,12 +141,25 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
         <div className="flex flex-row items-center px-3 mb-6">
           <Input
             type="text"
-            className="mr-4"
-            onChange={debounce(handleSearch, 250, {
-              trailing: true,
-            })}
+            onChange={e => {
+              setSearch(e.target.value)
+              handleSearch(e.target.value)
+            }}
+            value={search}
           />
-          {searching && <MagnifyingGlassIcon className="w-6 h-6 text-gray-400" />}
+          {showClearButton && (
+            <Button
+              variant="ghost"
+              className="w-0.5"
+              onClick={() => {
+                setSearch("")
+                handleSearch("")
+              }}
+            >
+              X
+            </Button>
+          )}
+          {searching && <MagnifyingGlassIcon className="ml-4 w-6 h-6 text-gray-400" />}
         </div>
         <ScrollArea className="h-[70vh] p-4">
           <ul>
@@ -129,10 +169,13 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
                   {favorites?.includes(item.id) ? (
                     <StarFilledIcon
                       className="w-8 h-8 text-yellow-400"
-                      onClick={() => favoriteUserItem(item.id, "tracks", "remove")}
+                      onClick={() => favoriteUserItem(item.id, data.type, "remove")}
                     />
                   ) : (
-                    <StarIcon className="w-8 h-8 text-yellow-400" onClick={() => favoriteUserItem(item.id, "tracks")} />
+                    <StarIcon
+                      className="w-8 h-8 text-yellow-400"
+                      onClick={() => favoriteUserItem(item.id, data.type)}
+                    />
                   )}
                   <div className="ml-2">
                     <p className="max-w-52 max-h-12 overflow-ellipsis line-clamp-2">{item.title}</p>

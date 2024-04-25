@@ -12,7 +12,7 @@ export default async function IndexPage() {
   const supabase = createSupabaseServerClient()
   const profileData = await getProfileData(supabase)
   const favoritesData = await getFavorites(supabase)
-  const spotifyData = await getSpotifyData(supabase, 3)
+  const spotifyData = await getSpotifyData(supabase)
 
   if (profileData.status === "error") {
     console.log(profileData.message)
@@ -41,7 +41,7 @@ export default async function IndexPage() {
                 ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
               )
             ),
-            3
+            4
           ),
         }}
       />

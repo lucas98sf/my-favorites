@@ -3,8 +3,10 @@ import { concat, take } from "lodash"
 import List from "@/components/List"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getFavorites } from "@/queries/favorites"
+import { getLetterboxdFavorites } from "@/queries/letterboxd"
 import { getUserProfile } from "@/queries/profiles"
 import { getSpotifyData } from "@/queries/spotify"
+import { getTopRatedMovies } from "@/queries/tmdb"
 
 import ProfileForm from "./ProfileForm"
 
@@ -24,12 +26,10 @@ export default async function LoginPage() {
     return
   }
 
-  const favoritesData = await getFavorites(supabase)
-  const spotifyData = await getSpotifyData(supabase, 50)
-
-  if (favoritesData.status === "error") {
-    return
-  }
+  const favoritesData = await getFavorites()
+  const spotifyData = await getSpotifyData(50)
+  // const letterboxdData = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
+  const moviesData = await getTopRatedMovies()
 
   return (
     <div className="flex flex-row gap-6">
@@ -46,23 +46,26 @@ export default async function LoginPage() {
           avatar_url: profileData.data.avatar_url as string,
         }}
       />
-      {spotifyData.status !== "error" && (
+      {spotifyData.status === "success" && (
         <List
           data={{
             type: "tracks",
             items: take(
               concat(
-                favoritesData.data.items,
-                spotifyData.data.items.filter(
-                  ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
-                )
+                favoritesData.status === "success" ? favoritesData.data.items : [],
+                favoritesData.status === "success"
+                  ? spotifyData.data.items.filter(
+                      ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
+                    )
+                  : spotifyData.data.items
               ),
               50
             ),
           }}
-          favorites={favoritesData.data.items.map(({ id }) => id)}
+          favorites={favoritesData.status === "success" ? favoritesData.data.items.map(({ id }) => id) : []}
         />
       )}
+      {moviesData?.status === "success" && <></>}
     </div>
   )
 }

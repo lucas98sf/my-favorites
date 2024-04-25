@@ -1,6 +1,8 @@
+"use server"
 import { filter, takeRight } from "lodash"
 
-import { Result, SupabaseClient } from "@/lib/types"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { Result } from "@/lib/types"
 import { getSpotifyToken } from "@/queries/spotify"
 import { Database } from "@/supabase/database.types"
 
@@ -19,8 +21,9 @@ export type Data = {
   }[]
 }
 
-export async function getFavorites(client: SupabaseClient): Promise<Result<Data>> {
+export async function getFavorites(): Promise<Result<Data>> {
   try {
+    const client = createSupabaseServerClient()
     const {
       data: { user },
     } = await client.auth.getUser()
@@ -48,7 +51,7 @@ export async function getFavorites(client: SupabaseClient): Promise<Result<Data>
       }
     }
 
-    const spotifyToken = await getSpotifyToken(client)
+    const spotifyToken = await getSpotifyToken()
 
     if (spotifyToken.status === "error") {
       return {
@@ -115,22 +118,20 @@ export async function handleFavorites({
 }) {
   return action === "remove"
     ? { [type]: filter(currentData?.[type] ?? [], currentDataId => currentDataId !== id) }
-    : { [type]: takeRight([...(currentData?.[type] ?? []), id], 3) }
+    : { [type]: takeRight([...(currentData?.[type] ?? []), id], 4) }
 }
 
-export async function favoriteItem(
-  client: SupabaseClient,
-  {
-    id,
-    type,
-    action = "add",
-  }: {
-    id: string
-    type: FavoriteType
-    action: "add" | "remove"
-  }
-): Promise<Result<Favorites["tracks"]>> {
+export async function favoriteItem({
+  id,
+  type,
+  action = "add",
+}: {
+  id: string
+  type: FavoriteType
+  action: "add" | "remove"
+}): Promise<Result<Favorites["tracks"]>> {
   try {
+    const client = createSupabaseServerClient()
     const {
       data: { user },
     } = await client.auth.getUser()

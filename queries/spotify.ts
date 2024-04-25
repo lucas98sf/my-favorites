@@ -1,42 +1,81 @@
 "use server"
-import { redirect } from "next/navigation"
+import SpotifyWebApi from "spotify-web-api-node"
 
-import { Result, SupabaseClient } from "@/lib/types"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { Result } from "@/lib/types"
 import { Data } from "@/queries/favorites"
 
-export async function getSpotifyToken(client: SupabaseClient): Promise<
+export async function getSpotifyToken(): Promise<
   Result<{
     access_token: string | null
     refresh_token: string | null
     expires_at: number | null
   }>
 > {
-  const {
-    data: { user },
-  } = await client.auth.getUser()
+  try {
+    const client = createSupabaseServerClient()
+    const {
+      data: { user },
+    } = await client.auth.getUser()
 
-  const { data, error, statusText } = await client
-    .from("spotify_data")
-    .select("access_token, refresh_token, expires_at")
-    .eq("user_id", user?.id as string)
-    .single()
+    const { data, error, statusText } = await client
+      .from("spotify_data")
+      .select("access_token, refresh_token, expires_at")
+      .eq("user_id", user?.id as string)
+      .single()
 
-  if (error) {
+    if (data?.expires_at && data.expires_at < Date.now()) {
+      console.log("Refreshing token")
+
+      const spotifyApi = new SpotifyWebApi({
+        refreshToken: data.refresh_token as string,
+        clientId: process.env.SPOTIFY_CLIENT_ID,
+        clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+      })
+      const newTokenData = await spotifyApi.refreshAccessToken()
+
+      await client
+        .from("spotify_data")
+        .update({
+          access_token: newTokenData?.body.access_token,
+          expires_at: newTokenData?.body.expires_in * 1000 + Date.now(),
+          refresh_token: newTokenData?.body.refresh_token,
+        })
+        .eq("user_id", user?.id as string)
+
+      return {
+        status: "success",
+        data: {
+          access_token: newTokenData?.body.access_token,
+          expires_at: newTokenData?.body.expires_in * 1000 + Date.now(),
+          refresh_token: newTokenData?.body.refresh_token as string,
+        },
+      }
+    }
+
+    if (error) {
+      console.error(error)
+      return {
+        status: "error",
+        message: "There was an error getting your spotify token",
+        code: statusText,
+      }
+    }
+
+    return {
+      status: "success",
+      data: {
+        access_token: data?.access_token,
+        refresh_token: data?.refresh_token,
+        expires_at: data?.expires_at,
+      },
+    }
+  } catch (error) {
     console.error(error)
     return {
       status: "error",
       message: "There was an error getting your spotify token",
-      code: statusText,
     }
-  }
-
-  return {
-    status: "success",
-    data: {
-      access_token: data?.access_token,
-      refresh_token: data?.refresh_token,
-      expires_at: data?.expires_at,
-    },
   }
 }
 
@@ -66,9 +105,9 @@ const getSpotifyApiData = async (spotifyToken: string, limit: number) => {
     })) as unknown as Promise<Result<any>>
 }
 
-export async function getSpotifyData(client: SupabaseClient, limit = 3): Promise<Result<Data>> {
+export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
   try {
-    const spotifyToken = await getSpotifyToken(client)
+    const spotifyToken = await getSpotifyToken()
 
     if (spotifyToken.status === "error") {
       return {
@@ -78,14 +117,6 @@ export async function getSpotifyData(client: SupabaseClient, limit = 3): Promise
     }
 
     let spotifyApiData = await getSpotifyApiData(spotifyToken.data.access_token as string, limit)
-
-    if (!spotifyApiData || (spotifyApiData.status === "error" && spotifyApiData.code === "401")) {
-      return {
-        status: "error",
-        message: "Spotify token expired",
-        code: "401",
-      }
-    }
 
     if (spotifyApiData.status === "error") {
       console.error(spotifyApiData)
