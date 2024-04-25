@@ -2,8 +2,8 @@ import { type FC } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
-import { Data } from "@/queries/favorites"
-import { ProfileData } from "@/queries/profiles"
+import { Data } from "@/server/favorites"
+import { ProfileData } from "@/server/profiles"
 
 const Profile: FC<{
   profileData: ProfileData

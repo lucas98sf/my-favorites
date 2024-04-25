@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import useSupabaseBrowser from "@/lib/supabase/browser"
 import { cn } from "@/lib/utils"
-import { updateUserProfile } from "@/queries/profiles"
+import { updateUserProfile } from "@/server/profiles"
 import { Database } from "@/supabase/database.types"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
@@ -95,7 +95,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       setError(null)
       setSuccess(null)
 
-      const result = await updateUserProfile(supabase, { ...data, user_id: user?.id as string })
+      const result = await updateUserProfile({ ...data, user_id: user?.id as string })
       if (result.status === "error") {
         if (result.code === "Conflict") {
           profileForm.setError("username", {
@@ -108,7 +108,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       }
       setUpdating(false)
     },
-    [profileForm, supabase, user?.id]
+    [profileForm, user?.id]
   )
 
   return (

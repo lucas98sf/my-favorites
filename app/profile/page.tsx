@@ -2,11 +2,11 @@ import { concat, take } from "lodash"
 
 import List from "@/components/List"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { getFavorites } from "@/queries/favorites"
-import { getLetterboxdFavorites } from "@/queries/letterboxd"
-import { getUserProfile } from "@/queries/profiles"
-import { getSpotifyData } from "@/queries/spotify"
-import { getTopRatedMovies } from "@/queries/tmdb"
+import { getFavorites } from "@/server/favorites"
+import { getLetterboxdFavorites } from "@/server/letterboxd"
+import { getUserProfile } from "@/server/profiles"
+import { getSpotifyData } from "@/server/spotify"
+import { getTopRatedMovies } from "@/server/tmdb"
 
 import ProfileForm from "./ProfileForm"
 
@@ -21,7 +21,7 @@ export default async function LoginPage() {
     return
   }
 
-  const profileData = await getUserProfile(supabase, user?.id as string)
+  const profileData = await getUserProfile(user?.id as string)
   if (profileData.status === "error") {
     return
   }

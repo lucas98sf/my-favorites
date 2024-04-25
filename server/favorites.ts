@@ -3,7 +3,7 @@ import { filter, takeRight } from "lodash"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
-import { getSpotifyToken } from "@/queries/spotify"
+import { getSpotifyToken } from "@/server/spotify"
 import { Database } from "@/supabase/database.types"
 
 export type Favorites = Database["public"]["Tables"]["favorites"]["Row"]
@@ -97,7 +97,6 @@ export async function getFavorites(): Promise<Result<Data>> {
       },
     }
   } catch (error) {
-    console.error(error)
     return {
       status: "error",
       message: "Could not find favorites",

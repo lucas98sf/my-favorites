@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Data, favoriteItem, FavoriteType, getFavorites, handleFavorites } from "@/queries/favorites"
-import { getSpotifyData, getSpotifyToken } from "@/queries/spotify"
+import { Data, favoriteItem, FavoriteType, getFavorites, handleFavorites } from "@/server/favorites"
+import { getSpotifyData, getSpotifyToken } from "@/server/spotify"
 
 interface ListProps {
   data: Data

@@ -1,3 +1,4 @@
+"use server"
 import { Result } from "@/lib/types"
 
 export const getTopRatedMovies = async (): Promise<

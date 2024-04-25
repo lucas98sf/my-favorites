@@ -7,6 +7,7 @@ import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { LoginUser, SignUpUser } from "@/lib/types"
+import { getURL } from "@/lib/utils"
 
 export async function login(formData: LoginUser): Promise<Result> {
   const supabase = createSupabaseServerClient()
@@ -59,8 +60,7 @@ export async function signUp(formData: SignUpUser): Promise<Result> {
 
 export async function signInWithGoogle(): Promise<Result> {
   const supabase = createSupabaseServerClient()
-
-  const redirectTo = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/auth/callback`
+  const redirectTo = `${getURL()}auth/callback`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -86,7 +86,7 @@ export async function signInWithGoogle(): Promise<Result> {
 
 export async function signInWithSpotify(): Promise<Result> {
   const client = createSupabaseServerClient()
-  const redirectTo = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/auth/callback/spotify`
+  const redirectTo = `${getURL()}auth/callback/spotify`
 
   const { data, error } = await client.auth.signInWithOAuth({
     provider: "spotify",

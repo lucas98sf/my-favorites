@@ -1,3 +1,4 @@
+"use server"
 import { parse } from "node-html-parser"
 
 import { Result } from "@/lib/types"

@@ -1,26 +1,21 @@
 import { concat, take } from "lodash"
-import { redirect } from "next/navigation"
 
-import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { getFavorites } from "@/queries/favorites"
-import { getProfileData } from "@/queries/profiles"
-import { getSpotifyData } from "@/queries/spotify"
+import { getFavorites } from "@/server/favorites"
+import { getProfileData } from "@/server/profiles"
+import { getSpotifyData } from "@/server/spotify"
 
 import Profile from "./Profile"
 
 export default async function IndexPage() {
-  const supabase = createSupabaseServerClient()
-  const profileData = await getProfileData(supabase)
-  const favoritesData = await getFavorites(supabase)
-  const spotifyData = await getSpotifyData(supabase)
+  const profileData = await getProfileData()
+  const favoritesData = await getFavorites()
+  const spotifyData = await getSpotifyData()
 
   if (profileData.status === "error") {
-    console.log(profileData.message)
     return
   }
 
   if (favoritesData.status === "error") {
-    console.log(favoritesData.message)
     return
   }
 

@@ -3,7 +3,7 @@ import SpotifyWebApi from "spotify-web-api-node"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
-import { Data } from "@/queries/favorites"
+import { Data } from "@/server/favorites"
 
 export async function getSpotifyToken(): Promise<
   Result<{
@@ -119,7 +119,6 @@ export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
     let spotifyApiData = await getSpotifyApiData(spotifyToken.data.access_token as string, limit)
 
     if (spotifyApiData.status === "error") {
-      console.error(spotifyApiData)
       return {
         status: "error",
         message: "There was an error fetching your spotify data",
@@ -141,7 +140,6 @@ export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
       },
     }
   } catch (error) {
-    console.error(error)
     return {
       status: "error",
       message: "Could not find spotify data",

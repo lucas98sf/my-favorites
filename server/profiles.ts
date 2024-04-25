@@ -1,12 +1,12 @@
-import { Result, SupabaseClient } from "@/lib/types"
+"use server"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { Result } from "@/lib/types"
 import { Database } from "@/supabase/database.types"
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
-export async function getUserProfile(
-  client: SupabaseClient,
-  user_id: string
-): Promise<Result<Partial<Profile> & { spotify_linked: boolean }>> {
+export async function getUserProfile(user_id: string): Promise<Result<Partial<Profile> & { spotify_linked: boolean }>> {
+  const client = createSupabaseServerClient()
   const { data, error, status } = await client.from("profiles").select("*").eq("user_id", user_id).single()
   const { data: spotifyData } = await client.from("spotify_data").select("expires_at").eq("user_id", user_id).single()
 
@@ -30,10 +30,8 @@ export async function getUserProfile(
   }
 }
 
-export async function updateUserProfile(
-  client: SupabaseClient,
-  data: Partial<Profile & { user_id: string }>
-): Promise<Result> {
+export async function updateUserProfile(data: Partial<Profile & { user_id: string }>): Promise<Result> {
+  const client = createSupabaseServerClient()
   const { error, statusText } = await client.from("profiles").upsert(
     {
       ...data,
@@ -72,8 +70,9 @@ export type ProfileData = {
   full_name: string | null
 }
 
-export async function getProfileData(client: SupabaseClient): Promise<Result<ProfileData>> {
+export async function getProfileData(): Promise<Result<ProfileData>> {
   try {
+    const client = createSupabaseServerClient()
     const {
       data: { user },
     } = await client.auth.getUser()
@@ -85,7 +84,6 @@ export async function getProfileData(client: SupabaseClient): Promise<Result<Pro
       .single()
 
     if (error) {
-      console.error(error)
       return {
         status: "error",
         message: "There was an error reading your profile",
@@ -102,7 +100,6 @@ export async function getProfileData(client: SupabaseClient): Promise<Result<Pro
       },
     }
   } catch (error) {
-    console.error(error)
     return {
       status: "error",
       message: "Could not find spotify data",
