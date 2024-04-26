@@ -3,7 +3,7 @@ import SpotifyWebApi from "spotify-web-api-node"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
-import { Data } from "@/server/favorites"
+import { Data, FavoriteItem } from "@/server/favorites"
 
 export async function getSpotifyToken(): Promise<
   Result<{
@@ -54,7 +54,6 @@ export async function getSpotifyToken(): Promise<
     }
 
     if (error) {
-      console.error(error)
       return {
         status: "error",
         message: "There was an error getting your spotify token",
@@ -79,32 +78,6 @@ export async function getSpotifyToken(): Promise<
   }
 }
 
-const getSpotifyApiData = async (spotifyToken: string, limit: number) => {
-  return (await fetch(`https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=${limit}`, {
-    headers: {
-      Authorization: `Bearer ${spotifyToken}`,
-    },
-  })
-    .then(res =>
-      res.json().then(data => {
-        if (res.status === 401) {
-          return {
-            status: "error",
-            message: "Unauthorized",
-            code: "401",
-          } as Result<any>
-        }
-        return {
-          status: "success",
-          data: data.items,
-        } as Result<any>
-      })
-    )
-    .catch(error => {
-      console.error(error)
-    })) as unknown as Promise<Result<any>>
-}
-
 export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
   try {
     const spotifyToken = await getSpotifyToken()
@@ -116,7 +89,7 @@ export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
       }
     }
 
-    let spotifyApiData = await getSpotifyApiData(spotifyToken.data.access_token as string, limit)
+    let spotifyApiData = await getTopTracks({ spotifyToken: spotifyToken.data.access_token as string, limit })
 
     if (spotifyApiData.status === "error") {
       return {
@@ -127,22 +100,88 @@ export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
 
     return {
       status: "success",
-      data: {
-        type: "tracks",
-        items: spotifyApiData.data.map((data: any) => {
-          return {
-            id: data.id,
-            title: data.name,
-            image: data.album?.images?.[0]?.url,
-            description: data.artists?.[0]?.name,
-          }
-        }),
-      },
+      data: spotifyApiData.data,
     }
   } catch (error) {
+    console.error(error)
     return {
       status: "error",
       message: "Could not find spotify data",
     }
   }
+}
+
+export async function getTopTracks({
+  spotifyToken,
+  limit,
+}: {
+  spotifyToken: string
+  limit: number
+}): Promise<Result<Data>> {
+  return fetch(`https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=${limit}`, {
+    headers: {
+      Authorization: `Bearer ${spotifyToken}`,
+    },
+  })
+    .then(res =>
+      res.json().then(data => {
+        if (res.status === 401) {
+          throw new Error("Token expired")
+        }
+        return {
+          status: "success",
+          data: {
+            type: "tracks",
+            items: data.items.map((item: any) => ({
+              id: item.id,
+              title: item.name,
+              description: item.artists?.[0]?.name,
+              image: item.album?.images?.[0]?.url,
+            })),
+          },
+        } as Result<Data>
+      })
+    )
+    .catch(error => {
+      console.error(error)
+      return {
+        status: "error",
+        message: "Could not find spotify data",
+      }
+    })
+}
+
+export async function getTrackById({
+  spotifyToken,
+  id,
+}: {
+  spotifyToken: string
+  id: string
+}): Promise<Result<FavoriteItem>> {
+  return fetch(`https://api.spotify.com/v1/tracks/${id}`, {
+    headers: {
+      Authorization: `Bearer ${spotifyToken}`,
+    },
+  })
+    .then(res =>
+      res.json().then(
+        data =>
+          ({
+            status: "success",
+            data: {
+              id: data.id,
+              title: data.name,
+              description: data.artists?.[0]?.name,
+              image: data.album?.images?.[0]?.url,
+            },
+          }) as Result<FavoriteItem>
+      )
+    )
+    .catch(error => {
+      console.error(error)
+      return {
+        status: "error",
+        message: "Could not find spotify data",
+      }
+    })
 }

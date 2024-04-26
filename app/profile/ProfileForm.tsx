@@ -44,7 +44,13 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     disabled: updating,
-    defaultValues: user,
+    defaultValues: {
+      username: user.username,
+      full_name: user.full_name,
+      mal_username: user.mal_username,
+      letterboxd_username: user.letterboxd_username,
+      backloggd_username: user.backloggd_username,
+    },
     reValidateMode: "onBlur",
   })
 
@@ -231,7 +237,11 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button className="mt-5" type="submit" disabled={updating || !profileForm.formState.isDirty}>
+            <Button
+              className="mt-5"
+              type="submit"
+              disabled={updating || profileForm.formState.isSubmitting || !profileForm.formState.isDirty}
+            >
               {updating ? "Updating..." : "Update"}
             </Button>
           </CardFooter>

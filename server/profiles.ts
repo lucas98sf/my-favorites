@@ -100,6 +100,7 @@ export async function getProfileData(): Promise<Result<ProfileData>> {
       },
     }
   } catch (error) {
+    console.error(error)
     return {
       status: "error",
       message: "Could not find spotify data",

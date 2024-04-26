@@ -3,25 +3,28 @@ import { filter, takeRight } from "lodash"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
-import { getSpotifyToken } from "@/server/spotify"
+import { getSpotifyToken, getTrackById } from "@/server/spotify"
+import { getMovieById } from "@/server/tmdb"
 import { Database } from "@/supabase/database.types"
 
 export type Favorites = Database["public"]["Tables"]["favorites"]["Row"]
 
 export type FavoriteType = "tracks" | "movies" | "games" | "animes"
 
-export type Data = {
-  type: FavoriteType
-  items: {
-    id: string
-    title: string
-    description: string
-    image: string
-    rating?: number
-  }[]
+export type FavoriteItem = {
+  id: string
+  title: string
+  description?: string
+  image: string
+  rating?: number
 }
 
-export async function getFavorites(): Promise<Result<Data>> {
+export type Data = {
+  type: FavoriteType
+  items: FavoriteItem[]
+}
+
+export async function getFavorites(type: FavoriteType): Promise<Result<Data>> {
   try {
     const client = createSupabaseServerClient()
     const {
@@ -30,7 +33,7 @@ export async function getFavorites(): Promise<Result<Data>> {
 
     const { data, error, statusText } = await client
       .from("favorites")
-      .select("tracks")
+      .select("*")
       .eq("user_id", user?.id as string)
       .single()
 
@@ -39,7 +42,7 @@ export async function getFavorites(): Promise<Result<Data>> {
         return {
           status: "success",
           data: {
-            type: "tracks",
+            type,
             items: [],
           },
         }
@@ -51,52 +54,62 @@ export async function getFavorites(): Promise<Result<Data>> {
       }
     }
 
-    const spotifyToken = await getSpotifyToken()
+    if (type === "tracks") {
+      const spotifyToken = await getSpotifyToken()
 
-    if (spotifyToken.status === "error") {
+      if (spotifyToken.status === "error") {
+        return {
+          status: "error",
+          message: spotifyToken.message,
+        }
+      }
+      const favoriteTracks = await Promise.all(
+        data.tracks?.map((id: string) =>
+          getTrackById({ id: id, spotifyToken: spotifyToken.data?.access_token as string })
+        )
+      )
       return {
-        status: "error",
-        message: spotifyToken.message,
+        status: "success",
+        data: {
+          type: "tracks",
+          items: favoriteTracks.flatMap(track => (track.status === "success" ? [track.data] : [])),
+        },
       }
     }
-
-    const favorites = await Promise.all(
-      data.tracks?.map(async (trackId: string) =>
-        fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
-          headers: {
-            Authorization: `Bearer ${spotifyToken?.data?.access_token}`,
-          },
-        })
-          .then(res => res.json())
-          .catch(error => {
-            console.error(error)
-            return {
-              status: "error",
-              message: "There was an error fetching your spotify data",
-            }
-          })
-      )
-    )
-
-    if (favorites.some((res: any) => res.error?.status === 401)) {
-      await client.auth.refreshSession({ refresh_token: spotifyToken?.data?.refresh_token as string })
+    if (type === "movies") {
+      const favoriteMovies = await Promise.all(data.movies?.map((id: string) => getMovieById(id)))
+      return {
+        status: "success",
+        data: {
+          type: "tracks",
+          items: favoriteMovies.flatMap(movie => (movie.status === "success" ? [movie.data] : [])),
+        },
+      }
     }
-
+    if (type === "games") {
+      return {
+        status: "success",
+        data: {
+          type: "games",
+          items: [],
+        },
+      }
+    }
+    if (type === "animes") {
+      return {
+        status: "success",
+        data: {
+          type: "animes",
+          items: [],
+        },
+      }
+    }
     return {
-      status: "success",
-      data: {
-        type: "tracks",
-        items: favorites.map((data: any) => {
-          return {
-            id: data.id,
-            title: data.name,
-            image: data.album?.images?.[0]?.url,
-            description: data.artists?.[0]?.name,
-          }
-        }),
-      },
+      status: "error",
+      message: "Could not find favorites",
     }
   } catch (error) {
+    console.error(error)
     return {
       status: "error",
       message: "Could not find favorites",
@@ -116,7 +129,7 @@ export async function handleFavorites({
   action: "add" | "remove"
 }) {
   return action === "remove"
-    ? { [type]: filter(currentData?.[type] ?? [], currentDataId => currentDataId !== id) }
+    ? { [type]: filter(currentData?.[type] ?? [], currentDataId => currentDataId != id) }
     : { [type]: takeRight([...(currentData?.[type] ?? []), id], 4) }
 }
 
@@ -156,7 +169,6 @@ export async function favoriteItem({
       .single()
 
     if (error) {
-      console.error(error)
       return {
         status: "error",
         message: `There was an error ${action === "add" ? "adding" : "removing"} this item from your favorites`,

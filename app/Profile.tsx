@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { type FC } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -8,7 +9,8 @@ import { ProfileData } from "@/server/profiles"
 const Profile: FC<{
   profileData: ProfileData
   spotifyData: Data
-}> = ({ profileData, spotifyData }) => {
+  moviesData: Data
+}> = ({ profileData, spotifyData, moviesData }) => {
   return (
     <Card className="m-auto py-10 p-8 mx-24">
       <div className="tracks flex flex-col gap-2">
@@ -22,20 +24,46 @@ const Profile: FC<{
             <span className="mb-6">{profileData.full_name}</span>
           </div>
         </div>
-        <span>Favorite track&apos;s</span>
-        {spotifyData?.items?.map((track: any, index: number) => (
-          <iframe
-            key={index}
-            src={`https://open.spotify.com/embed/track/${track.id}`}
-            style={{
-              borderRadius: "14px",
-            }}
-            width="600"
-            height="152"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          />
-        ))}
+        <div className="flex flex-row gap-4">
+          <div className="flex flex-col">
+            <span className="mb-3">Track&apos;s</span>
+            {spotifyData?.items?.map((track: any, index: number) => (
+              <iframe
+                key={index}
+                src={`https://open.spotify.com/embed/track/${track.id}`}
+                style={{
+                  borderRadius: "14px",
+                  marginBottom: "1rem",
+                }}
+                width="300"
+                height="80"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="eager"
+              />
+            ))}
+          </div>
+          <div className="flex flex-col">
+            <span className="mb-3">Movie&apos;s</span>
+            <div className="grid grid-cols-2 gap-4">
+              {moviesData?.items?.map((movie: any, index: number) => (
+                <div key={index}>
+                  <span>{movie.title}</span>
+                  <Image
+                    alt={movie.title}
+                    src={movie.image}
+                    width="220"
+                    height="0"
+                    style={{
+                      borderRadius: "10%",
+                      marginBottom: "1rem",
+                      height: "auto",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </Card>
   )

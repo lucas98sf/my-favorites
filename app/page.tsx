@@ -15,14 +15,19 @@ export default async function IndexPage({ searchParams }: { searchParams: Record
   }
 
   const profileData = await getProfileData()
-  const favoritesData = await getFavorites()
+  const favoritesTracksData = await getFavorites("tracks")
+  const favoritesMoviesData = await getFavorites("movies")
   const spotifyData = await getSpotifyData()
 
   if (profileData.status === "error") {
     return
   }
 
-  if (favoritesData.status === "error") {
+  if (favoritesTracksData.status === "error") {
+    return
+  }
+
+  if (favoritesMoviesData.status === "error") {
     return
   }
 
@@ -38,14 +43,15 @@ export default async function IndexPage({ searchParams }: { searchParams: Record
           type: "tracks",
           items: take(
             concat(
-              favoritesData.data.items,
+              favoritesTracksData.data.items,
               spotifyData.data.items.filter(
-                ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
+                ({ id }) => !favoritesTracksData.data.items.some((favorite: any) => favorite.id === id)
               )
             ),
             4
           ),
         }}
+        moviesData={favoritesMoviesData.data}
       />
     </div>
   )

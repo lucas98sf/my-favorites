@@ -18,8 +18,8 @@ interface ListProps {
 }
 
 const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => {
-  const [data, setData] = useState(givenData)
   const [searching, setSearching] = useState(false)
+  const [data, setData] = useState(givenData)
   const [favorites, setFavorites] = useState<string[]>(givenFavorites)
   const [showClearButton, setShowClearButton] = useState(false)
   const [search, setSearch] = useState<string>("")
@@ -32,14 +32,14 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
     [favorites]
   )
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- debounce messes with the checking
   const handleSearch = useCallback(
     debounce(async searchValue => {
       switch (givenData.type) {
         case "tracks": {
           if (searchValue === "") {
             setSearching(true)
-            const favoritesData = await getFavorites()
+            const favoritesData = await getFavorites(data.type)
             const spotifyData = await getSpotifyData(50)
 
             if (favoritesData.status === "error") {
@@ -164,7 +164,7 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
         <ScrollArea className="h-[70vh] p-4">
           <ul>
             {data.items.map(item => (
-              <li key={item.id} className="flex flex-col w-[250px]">
+              <li key={item.id} className="flex flex-col w-[220px]">
                 <div className="flex flex-row">
                   {favorites?.includes(item.id) ? (
                     <StarFilledIcon
@@ -178,7 +178,7 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
                     />
                   )}
                   <div className="ml-2">
-                    <p className="max-w-52 max-h-12 overflow-ellipsis line-clamp-2">{item.title}</p>
+                    <p className="max-w-44 max-h-12 overflow-ellipsis line-clamp-2">{item.title}</p>
                     <p className="text-sm text-gray-500">
                       {truncate(item.description, {
                         length: 30,
@@ -190,11 +190,12 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
                   priority
                   src={item.image}
                   alt={item.title}
-                  width="250"
-                  height="250"
+                  width="220"
+                  height="0"
                   style={{
                     borderRadius: "10%",
                     marginBottom: "2rem",
+                    height: "auto",
                   }}
                 />
               </li>
