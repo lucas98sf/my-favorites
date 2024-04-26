@@ -1,4 +1,5 @@
 import { concat, take } from "lodash"
+import { redirect } from "next/navigation"
 
 import { getFavorites } from "@/server/favorites"
 import { getProfileData } from "@/server/profiles"
@@ -6,7 +7,13 @@ import { getSpotifyData } from "@/server/spotify"
 
 import Profile from "./Profile"
 
-export default async function IndexPage() {
+export default async function IndexPage({ searchParams }: { searchParams: Record<string, string> }) {
+  const code = searchParams["code"]
+
+  if (code) {
+    redirect(`/auth/callback?code=${code}`)
+  }
+
   const profileData = await getProfileData()
   const favoritesData = await getFavorites()
   const spotifyData = await getSpotifyData()
