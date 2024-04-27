@@ -1,3 +1,4 @@
+import { truncate } from "lodash"
 import Image from "next/image"
 import { type FC } from "react"
 
@@ -24,16 +25,15 @@ const Profile: FC<{
             <span className="mb-6">{profileData.full_name}</span>
           </div>
         </div>
-        <div className="flex flex-row gap-4">
-          <div className="flex flex-col">
-            <span className="mb-3">Track&apos;s</span>
+        <div className="flex flex-row gap-4 mt-4">
+          <div className="flex flex-col gap-4">
+            <span className="mb-4">Track&apos;s</span>
             {spotifyData?.items?.map((track: any, index: number) => (
               <iframe
                 key={index}
                 src={`https://open.spotify.com/embed/track/${track.id}`}
                 style={{
                   borderRadius: "14px",
-                  marginBottom: "1rem",
                 }}
                 width="300"
                 height="80"
@@ -43,19 +43,24 @@ const Profile: FC<{
             ))}
           </div>
           <div className="flex flex-col">
-            <span className="mb-3">Movie&apos;s</span>
+            <span>Movie&apos;s</span>
             <div className="grid grid-cols-2 gap-4">
               {moviesData?.items?.map((movie: any, index: number) => (
-                <div key={index}>
-                  <span>{movie.title}</span>
+                <div key={index} className="w-28">
+                  <div className="h-8 w-28 flex break-after-all">
+                    <p className="text-xs overflow-ellipsis self-end inline-block">
+                      {truncate(movie.title, {
+                        length: 50,
+                      })}
+                    </p>
+                  </div>
                   <Image
                     alt={movie.title}
                     src={movie.image}
-                    width="220"
+                    width="110"
                     height="0"
                     style={{
                       borderRadius: "10%",
-                      marginBottom: "1rem",
                       height: "auto",
                     }}
                   />
