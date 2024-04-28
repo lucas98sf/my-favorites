@@ -6,7 +6,7 @@ import { FavoriteItem, getFavorites } from "@/server/favorites"
 import { getLetterboxdFavorites } from "@/server/letterboxd"
 import { getUserProfile } from "@/server/profiles"
 import { getSpotifyData } from "@/server/spotify"
-import { getMovieByLetterboxdSlug, getTopRatedMovies } from "@/server/tmdb"
+import { getTopRatedMovies, searchMovie } from "@/server/tmdb"
 
 import ProfileForm from "./ProfileForm"
 
@@ -32,9 +32,9 @@ export default async function ProfilePage() {
   const letterboxdData = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
   let letterboxdFavorites: FavoriteItem[] = []
   if (letterboxdData.status === "success") {
-    letterboxdFavorites = (
-      await Promise.all(letterboxdData.data?.map(item => getMovieByLetterboxdSlug(item.slug)) ?? [])
-    ).flatMap(movie => (movie.status === "success" ? [movie.data] : []))
+    letterboxdFavorites = (await Promise.all(letterboxdData.data?.map(item => searchMovie(item.slug)) ?? [])).flatMap(
+      movie => (movie.status === "success" ? [movie.data.items[0]] : [])
+    )
   }
 
   const moviesData = await getTopRatedMovies({ excludeIds: letterboxdFavorites.map(({ id }) => id) })

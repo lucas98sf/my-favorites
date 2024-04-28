@@ -2,7 +2,7 @@
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: string[] }): Promise<Result<Data>> => {
+export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
   const requestTMDBApi = async (page = 1) => {
     return fetch(`https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=${page}`, {
       headers: {
@@ -71,22 +71,28 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
 }
 
 // unfortunately, the TMDB API does not support searching by letterboxd film id
-export const getMovieByLetterboxdSlug = async (slug: string): Promise<Result<FavoriteItem>> => {
-  return fetch(`https://api.themoviedb.org/3/search/movie?query=${slug.replace("-", "+")}&limit=1`, {
-    headers: {
-      Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
-    },
-  })
+export const searchMovie = async (search: string, limit = 1): Promise<Result<Data>> => {
+  return fetch(
+    `https://api.themoviedb.org/3/search/movie?query=${search.replace(/[^\w\s]/gi, "").replace(/- /gi, "+")}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
+      },
+    }
+  )
     .then(res =>
       res.json().then(data => {
         return {
           status: "success",
           data: {
-            id: data.results?.[0]?.id,
-            title: data.results?.[0]?.title,
-            image: `https://image.tmdb.org/t/p/w200${data.results?.[0]?.poster_path}`,
+            type: "movies",
+            items: data.results.map((result: any) => ({
+              id: result.id,
+              title: result.title,
+              image: `https://image.tmdb.org/t/p/w200${result.poster_path}`,
+            })),
           },
-        } as Result<FavoriteItem>
+        } as Result<Data>
       })
     )
     .catch(error => {

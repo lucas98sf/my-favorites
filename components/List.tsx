@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Data, favoriteItem, FavoriteType, getFavorites, handleFavorites } from "@/server/favorites"
-import { getSpotifyData, getSpotifyToken } from "@/server/spotify"
+import { getSpotifyToken } from "@/server/spotify"
+import { searchMovie } from "@/server/tmdb"
 
 interface ListProps {
   data: Data
@@ -35,42 +36,34 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- debounce messes with the checking
   const handleSearch = useCallback(
     debounce(async searchValue => {
+      if (searchValue === "") {
+        setSearching(true)
+        const favoritesData = await getFavorites(data.type)
+
+        if (favoritesData.status === "error") {
+          console.error(favoritesData.message)
+          return
+        }
+
+        setData({
+          type: givenData.type,
+          items: take(
+            concat(
+              favoritesData.data.items,
+              givenData.items.filter(({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id))
+            ),
+            50
+          ),
+        })
+        setSearching(false)
+      }
+
+      if (searchValue.length < 3) {
+        return
+      }
+
       switch (givenData.type) {
         case "tracks": {
-          if (searchValue === "") {
-            setSearching(true)
-            const favoritesData = await getFavorites(data.type)
-            const spotifyData = await getSpotifyData(50)
-
-            if (favoritesData.status === "error") {
-              console.error(favoritesData.message)
-              return
-            }
-
-            if (spotifyData.status === "error") {
-              console.error(spotifyData.message)
-              return
-            }
-
-            setData({
-              type: givenData.type,
-              items: take(
-                concat(
-                  favoritesData.data.items,
-                  spotifyData.data.items.filter(
-                    ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
-                  )
-                ),
-                50
-              ),
-            })
-            setSearching(false)
-          }
-
-          if (searchValue.length < 3) {
-            return
-          }
-
           setSearching(true)
 
           const spotifyToken = await getSpotifyToken()
@@ -108,8 +101,19 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
             }),
           })
           setSearching(false)
+          return
         }
         case "movies": {
+          setSearching(true)
+
+          const moviesData = await searchMovie(searchValue, 10)
+
+          if (moviesData.status === "error") {
+            return
+          }
+
+          setData(moviesData.data)
+          setSearching(false)
           return
         }
         case "animes": {
