@@ -71,7 +71,7 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
 }
 
 // unfortunately, the TMDB API does not support searching by letterboxd film id
-export const searchMovie = async (search: string, limit = 1): Promise<Result<Data>> => {
+export const searchMovies = async (search: string, limit = 1): Promise<Result<Data>> => {
   return fetch(
     `https://api.themoviedb.org/3/search/movie?query=${search.replace(/[^\w\s]/gi, "").replace(/- /gi, "+")}&limit=${limit}`,
     {

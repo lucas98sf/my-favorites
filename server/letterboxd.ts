@@ -14,6 +14,12 @@ export const getLetterboxdFavorites = async (
     }[]
   >
 > => {
+  if (!username) {
+    return {
+      status: "error",
+      message: "No username provided",
+    }
+  }
   return fetch(`https://letterboxd.com/${username}`)
     .then(res =>
       res.text().then(data => {

@@ -3,6 +3,7 @@ import { filter, takeRight } from "lodash"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
+import { getAnimeById } from "@/server/myanimelist"
 import { getSpotifyToken, getTrackById } from "@/server/spotify"
 import { getMovieById } from "@/server/tmdb"
 import { Database } from "@/supabase/database.types"
@@ -81,8 +82,18 @@ export async function getFavorites(type: FavoriteType): Promise<Result<Data>> {
       return {
         status: "success",
         data: {
-          type: "tracks",
+          type: "movies",
           items: favoriteMovies.flatMap(movie => (movie.status === "success" ? [movie.data] : [])),
+        },
+      }
+    }
+    if (type === "animes") {
+      const favoriteAnimes = await Promise.all(data.animes?.map((id: string) => getAnimeById(id)))
+      return {
+        status: "success",
+        data: {
+          type: "animes",
+          items: favoriteAnimes.flatMap(anime => (anime.status === "success" ? [anime.data] : [])),
         },
       }
     }
@@ -91,15 +102,6 @@ export async function getFavorites(type: FavoriteType): Promise<Result<Data>> {
         status: "success",
         data: {
           type: "games",
-          items: [],
-        },
-      }
-    }
-    if (type === "animes") {
-      return {
-        status: "success",
-        data: {
-          type: "animes",
           items: [],
         },
       }

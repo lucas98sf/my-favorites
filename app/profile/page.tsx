@@ -4,9 +4,10 @@ import List from "@/components/List"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { FavoriteItem, getFavorites } from "@/server/favorites"
 import { getLetterboxdFavorites } from "@/server/letterboxd"
+import { getTopRatedAnimes, getUserTopRatedAnimes } from "@/server/myanimelist"
 import { getUserProfile } from "@/server/profiles"
 import { getSpotifyData } from "@/server/spotify"
-import { getTopRatedMovies, searchMovie } from "@/server/tmdb"
+import { getTopRatedMovies, searchMovies } from "@/server/tmdb"
 
 import ProfileForm from "./ProfileForm"
 
@@ -26,23 +27,31 @@ export default async function ProfilePage() {
     return
   }
 
-  const favoritesMoviesData = await getFavorites("movies")
-  const favoritesTracksData = await getFavorites("tracks")
+  const spotifyData = await getSpotifyData(50)
+
+  const favoriteMoviesData = await getFavorites("movies")
+  const favoriteTracksData = await getFavorites("tracks")
+  const favoriteAnimesData = await getFavorites("animes")
 
   const letterboxdData = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
   let letterboxdFavorites: FavoriteItem[] = []
   if (letterboxdData.status === "success") {
-    letterboxdFavorites = (await Promise.all(letterboxdData.data?.map(item => searchMovie(item.slug)) ?? [])).flatMap(
+    letterboxdFavorites = (await Promise.all(letterboxdData.data?.map(item => searchMovies(item.slug)) ?? [])).flatMap(
       movie => (movie.status === "success" ? [movie.data.items[0]] : [])
     )
   }
-
   const moviesData = await getTopRatedMovies({ excludeIds: letterboxdFavorites.map(({ id }) => id) })
   if (moviesData.status === "success" && letterboxdFavorites.length > 0) {
     moviesData.data.items.unshift(...letterboxdFavorites)
   }
 
-  const spotifyData = await getSpotifyData(50)
+  const malFavorites = await getUserTopRatedAnimes(profileData.data.mal_username as string)
+  const animesData = await getTopRatedAnimes({
+    excludeIds: favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items.map(({ id }) => id) : [],
+  })
+  if (malFavorites.status === "success" && animesData.status === "success") {
+    animesData.data.items.unshift(...malFavorites.data.items)
+  }
 
   return (
     <div className="flex flex-row gap-6">
@@ -65,17 +74,17 @@ export default async function ProfilePage() {
             type: "tracks",
             items: take(
               concat(
-                favoritesTracksData.status === "success" ? favoritesTracksData.data.items : [],
-                favoritesTracksData.status === "success"
+                favoriteTracksData.status === "success" ? favoriteTracksData.data.items : [],
+                favoriteTracksData.status === "success"
                   ? spotifyData.data.items.filter(
-                      ({ id }) => !favoritesTracksData.data.items.some((favorite: any) => favorite.id === id)
+                      ({ id }) => !favoriteTracksData.data.items.some((favorite: any) => favorite.id === id)
                     )
                   : spotifyData.data.items
               ),
               50
             ),
           }}
-          favorites={favoritesTracksData.status === "success" ? favoritesTracksData.data.items.map(({ id }) => id) : []}
+          favorites={favoriteTracksData.status === "success" ? favoriteTracksData.data.items.map(({ id }) => id) : []}
         />
       )}
       {moviesData?.status === "success" && (
@@ -84,17 +93,36 @@ export default async function ProfilePage() {
             type: "movies",
             items: take(
               concat(
-                favoritesMoviesData.status === "success" ? favoritesMoviesData.data.items : [],
-                favoritesMoviesData.status === "success"
+                favoriteMoviesData.status === "success" ? favoriteMoviesData.data.items : [],
+                favoriteMoviesData.status === "success"
                   ? moviesData.data.items.filter(
-                      ({ id }) => !favoritesMoviesData.data.items.some((favorite: any) => favorite.id === id)
+                      ({ id }) => !favoriteMoviesData.data.items.some((favorite: any) => favorite.id === id)
                     )
                   : moviesData.data.items
               ),
               50
             ),
           }}
-          favorites={favoritesMoviesData.status === "success" ? favoritesMoviesData.data.items.map(({ id }) => id) : []}
+          favorites={favoriteMoviesData.status === "success" ? favoriteMoviesData.data.items.map(({ id }) => id) : []}
+        />
+      )}
+      {animesData?.status === "success" && (
+        <List
+          data={{
+            type: "animes",
+            items: take(
+              concat(
+                favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items : [],
+                favoriteAnimesData.status === "success"
+                  ? animesData.data.items.filter(
+                      ({ id }) => !favoriteAnimesData.data.items.some((favorite: any) => favorite.id === id)
+                    )
+                  : animesData.data.items
+              ),
+              50
+            ),
+          }}
+          favorites={favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items.map(({ id }) => id) : []}
         />
       )}
     </div>

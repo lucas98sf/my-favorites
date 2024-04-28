@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Data, favoriteItem, FavoriteType, getFavorites, handleFavorites } from "@/server/favorites"
-import { getSpotifyToken } from "@/server/spotify"
-import { searchMovie } from "@/server/tmdb"
+import { searchAnimes } from "@/server/myanimelist"
+import { getSpotifyToken, searchTrack as searchTracks } from "@/server/spotify"
+import { searchMovies } from "@/server/tmdb"
 
 interface ListProps {
   data: Data
@@ -72,41 +73,24 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
             return
           }
 
-          const result = await fetch(
-            `https://api.spotify.com/v1/search?query=${searchValue}&type=track&offset=0&limit=10`,
-            {
-              headers: {
-                Authorization: `Bearer ${spotifyToken?.data?.access_token}`,
-              },
-            }
-          )
-            .then(res => res.json())
-            .catch(error => {
-              console.error(error)
-              return {
-                status: "error",
-                message: "There was an error fetching your spotify data",
-              }
-            })
-
-          setData({
-            type: "tracks",
-            items: result.tracks?.items?.map((sd: any) => {
-              return {
-                id: sd.id,
-                title: sd.name,
-                description: sd.artists?.[0]?.name,
-                image: sd.album?.images?.[0]?.url,
-              }
-            }),
+          const tracksData = await searchTracks({
+            spotifyToken: spotifyToken.data.access_token as string,
+            search: searchValue,
+            limit: 10,
           })
+
+          if (tracksData.status === "error") {
+            return
+          }
+
+          setData(tracksData.data)
           setSearching(false)
           return
         }
         case "movies": {
           setSearching(true)
 
-          const moviesData = await searchMovie(searchValue, 10)
+          const moviesData = await searchMovies(searchValue, 10)
 
           if (moviesData.status === "error") {
             return
@@ -117,6 +101,16 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
           return
         }
         case "animes": {
+          setSearching(true)
+
+          const animesData = await searchAnimes(searchValue, 10)
+
+          if (animesData.status === "error") {
+            return
+          }
+
+          setData(animesData.data)
+          setSearching(false)
           return
         }
         case "games": {
@@ -139,7 +133,7 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
 
   return (
     <Card>
-      <CardHeader>{`${data.type}'s`}</CardHeader>
+      <CardHeader>{data.type}</CardHeader>
       <CardContent>
         <Label>Search</Label>
         <div className="flex flex-row items-center px-3 mb-6">

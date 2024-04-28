@@ -125,9 +125,6 @@ export async function getTopTracks({
   })
     .then(res =>
       res.json().then(data => {
-        if (res.status === 401) {
-          throw new Error("Token expired")
-        }
         return {
           status: "success",
           data: {
@@ -182,6 +179,45 @@ export async function getTrackById({
       return {
         status: "error",
         message: "Could not find spotify data",
+      }
+    })
+}
+
+export const searchTrack = async ({
+  spotifyToken,
+  search,
+  limit = 1,
+}: {
+  spotifyToken: string
+  search: string
+  limit?: number
+}): Promise<Result<Data>> => {
+  return fetch(`https://api.spotify.com/v1/search?query=${search}&type=track&offset=0&limit=${limit}`, {
+    headers: {
+      Authorization: `Bearer ${spotifyToken}`,
+    },
+  })
+    .then(res =>
+      res.json().then(data => {
+        return {
+          status: "success",
+          data: {
+            type: "tracks",
+            items: data.items.map((item: any) => ({
+              id: item.id,
+              title: item.name,
+              description: item.artists?.[0]?.name,
+              image: item.album?.images?.[0]?.url,
+            })),
+          },
+        } as Result<Data>
+      })
+    )
+    .catch(error => {
+      console.error(error)
+      return {
+        status: "error",
+        message: "There was an error fetching your spotify data",
       }
     })
 }
