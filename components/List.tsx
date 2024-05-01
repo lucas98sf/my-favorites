@@ -36,90 +36,98 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- debounce messes with the checking
   const handleSearch = useCallback(
-    debounce(async searchValue => {
-      if (searchValue === "") {
-        setSearching(true)
-        const favoritesData = await getFavorites(data.type)
+    debounce(
+      async searchValue => {
+        if (searchValue === "") {
+          setSearching(true)
+          const favoritesData = await getFavorites(data.type)
 
-        if (favoritesData.status === "error") {
-          console.error(favoritesData.message)
-          return
-        }
+          if (favoritesData.status === "error") {
+            console.error(favoritesData.message)
+            return
+          }
 
-        setData({
-          type: givenData.type,
-          items: take(
-            concat(
-              favoritesData.data.items,
-              givenData.items.filter(({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id))
+          setData({
+            type: givenData.type,
+            items: take(
+              concat(
+                favoritesData.data.items,
+                givenData.items.filter(
+                  ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
+                )
+              ),
+              50
             ),
-            50
-          ),
-        })
-        setSearching(false)
-      }
-
-      if (searchValue.length < 3) {
-        return
-      }
-
-      switch (givenData.type) {
-        case "tracks": {
-          setSearching(true)
-
-          const spotifyToken = await getSpotifyToken()
-
-          if (spotifyToken.status === "error") {
-            return
-          }
-
-          const tracksData = await searchTracks({
-            spotifyToken: spotifyToken.data.access_token as string,
-            search: searchValue,
-            limit: 10,
           })
+          setSearching(false)
+        }
 
-          if (tracksData.status === "error") {
+        if (searchValue.length < 3) {
+          return
+        }
+
+        switch (givenData.type) {
+          case "tracks": {
+            setSearching(true)
+
+            const spotifyToken = await getSpotifyToken()
+
+            if (spotifyToken.status === "error") {
+              return
+            }
+
+            const tracksData = await searchTracks({
+              spotifyToken: spotifyToken.data.access_token as string,
+              search: searchValue,
+              limit: 10,
+            })
+
+            if (tracksData.status === "error") {
+              return
+            }
+
+            setData(tracksData.data)
+            setSearching(false)
             return
           }
+          case "movies": {
+            setSearching(true)
 
-          setData(tracksData.data)
-          setSearching(false)
-          return
-        }
-        case "movies": {
-          setSearching(true)
+            const moviesData = await searchMovies(searchValue, 10)
 
-          const moviesData = await searchMovies(searchValue, 10)
+            if (moviesData.status === "error") {
+              return
+            }
 
-          if (moviesData.status === "error") {
+            setData(moviesData.data)
+            setSearching(false)
             return
           }
+          case "animes": {
+            setSearching(true)
 
-          setData(moviesData.data)
-          setSearching(false)
-          return
-        }
-        case "animes": {
-          setSearching(true)
+            const animesData = await searchAnimes(searchValue, 10)
 
-          const animesData = await searchAnimes(searchValue, 10)
+            if (animesData.status === "error") {
+              return
+            }
 
-          if (animesData.status === "error") {
+            setData(animesData.data)
+            setSearching(false)
             return
           }
-
-          setData(animesData.data)
-          setSearching(false)
-          return
+          case "games": {
+            return
+          }
+          default:
+            return givenData.type satisfies never
         }
-        case "games": {
-          return
-        }
-        default:
-          return givenData.type satisfies never
+      },
+      1000,
+      {
+        leading: true,
       }
-    }, 1000),
+    ),
     [givenData.type]
   )
 
@@ -142,7 +150,6 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
             type="text"
             onChange={e => {
               setSearch(e.target.value)
-              handleSearch(e.target.value)
             }}
             value={search}
           />
@@ -158,7 +165,14 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
               X
             </Button>
           )}
-          {<MagnifyingGlassIcon className={"w-6 h-6 text-gray-400 absolute right-0"} />}
+          <Button
+            className="absolute right-0 p-0 px-2"
+            disabled={searching}
+            variant="ghost"
+            onClick={() => handleSearch(search)}
+          >
+            <MagnifyingGlassIcon className={"w-6 h-6 text-gray-400"} />
+          </Button>
         </div>
         <ScrollArea className="h-[70vh] p-4">
           <ul>
@@ -190,13 +204,10 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
                     priority
                     src={item.image}
                     alt={item.title}
-                    width="220"
+                    width="0"
                     height="0"
-                    style={{
-                      borderRadius: "10%",
-                      marginBottom: "2rem",
-                      height: "auto",
-                    }}
+                    sizes="100vw"
+                    className="w-full h-auto rounded-sm mb-4"
                   />
                 )}
               </li>

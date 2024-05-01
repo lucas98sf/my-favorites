@@ -1,5 +1,6 @@
 "use server"
 import { omit } from "lodash"
+import { cache } from "react"
 
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
@@ -37,7 +38,7 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
   }
 }
 
-export const getAnimeById = async (id: string): Promise<Result<FavoriteItem>> => {
+export const getAnimeById = cache(async (id: string): Promise<Result<FavoriteItem>> => {
   return fetch(`https://api.myanimelist.net/v2/anime/${id}`, {
     headers: {
       "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
@@ -49,7 +50,7 @@ export const getAnimeById = async (id: string): Promise<Result<FavoriteItem>> =>
           ({
             status: "success",
             data: {
-              id: data.id,
+              id: String(data.id),
               title: data.title,
               image: data.main_picture.medium,
             },
@@ -57,13 +58,13 @@ export const getAnimeById = async (id: string): Promise<Result<FavoriteItem>> =>
       )
     )
     .catch(error => {
-      console.error(error)
+      console.error("!!!", id, error)
       return {
         status: "error",
         message: "Could not find MAL data",
       }
     })
-}
+})
 
 export const searchAnimes = async (search: string, limit = 1): Promise<Result<Data>> => {
   return fetch(
