@@ -1,6 +1,6 @@
 import "./globals.css"
 
-import { Sono as FontSans } from "next/font/google"
+import { Sono } from "next/font/google"
 
 import { NavBar } from "@/components/NavBar"
 import { ThemeProvider } from "@/components/ThemeProvider"
@@ -13,9 +13,8 @@ export const metadata = {
   description: "a place to keep track of your favorite things",
 }
 
-const fontSans = FontSans({
+const sono = Sono({
   subsets: ["latin"],
-  variable: "--font-sans",
   fallback: ["sans-serif"],
 })
 
@@ -23,7 +22,7 @@ export const dynamic = "force-dynamic"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={fontSans.className} suppressHydrationWarning>
+    <html lang="en" className={sono.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
         <ThemeProvider
           themes={["light", "dark"]}

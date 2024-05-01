@@ -65,9 +65,7 @@ export async function getFavorites(type: FavoriteType): Promise<Result<Data>> {
         }
       }
       const favoriteTracks = await Promise.all(
-        data.tracks?.map((id: string) =>
-          getTrackById({ id: id, spotifyToken: spotifyToken.data?.access_token as string })
-        )
+        data.tracks?.map((id: string) => getTrackById({ id, spotifyToken: spotifyToken.data?.access_token as string }))
       )
       return {
         status: "success",

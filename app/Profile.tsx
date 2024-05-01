@@ -27,7 +27,7 @@ const Profile: FC<{
         </div>
         <div className="flex flex-row gap-4 mt-4">
           <div className="flex flex-col gap-4">
-            <span className="mb-4">Track&apos;s</span>
+            <span className="mb-4">Tracks</span>
             {spotifyData?.items?.map((track: any, index: number) => (
               <iframe
                 key={index}
@@ -43,7 +43,7 @@ const Profile: FC<{
             ))}
           </div>
           <div className="flex flex-col">
-            <span>Movie&apos;s</span>
+            <span>Movies</span>
             <div className="grid grid-cols-2 gap-4">
               {moviesData?.items?.map((movie: any, index: number) => (
                 <div key={index} className="w-28">

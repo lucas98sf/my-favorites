@@ -12,7 +12,7 @@ export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: stri
       res.json().then(data => {
         return data.results
           ?.map((res: any) => ({
-            id: res.id,
+            id: String(res.id),
             title: res.title,
             image: `https://image.tmdb.org/t/p/w200${res.poster_path}`,
           }))
@@ -54,9 +54,9 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
           ({
             status: "success",
             data: {
-              id: data.id,
+              id: String(data.id),
               title: data.title,
-              image: `https://image.tmdb.org/t/p/w200${data.poster_path}`,
+              image: data.poster_path ? `https://image.tmdb.org/t/p/w200${data.poster_path}` : null,
             },
           }) as Result<FavoriteItem>
       )
@@ -87,9 +87,9 @@ export const searchMovies = async (search: string, limit = 1): Promise<Result<Da
           data: {
             type: "movies",
             items: data.results.map((result: any) => ({
-              id: result.id,
+              id: String(result.id),
               title: result.title,
-              image: `https://image.tmdb.org/t/p/w200${result.poster_path}`,
+              image: result.poster_path ? `https://image.tmdb.org/t/p/w200${result.poster_path}` : null,
             })),
           },
         } as Result<Data>

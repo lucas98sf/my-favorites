@@ -136,8 +136,9 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
       <CardHeader>{data.type}</CardHeader>
       <CardContent>
         <Label>Search</Label>
-        <div className="flex flex-row items-center px-3 mb-6">
+        <div className="flex flex-row items-center px-3 mb-6 relative">
           <Input
+            className="-mr-6 w-[200px]"
             type="text"
             onChange={e => {
               setSearch(e.target.value)
@@ -148,7 +149,7 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
           {showClearButton && (
             <Button
               variant="ghost"
-              className="w-0.5"
+              className="rounded-full p-2 absolute right-10"
               onClick={() => {
                 setSearch("")
                 handleSearch("")
@@ -157,12 +158,12 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
               X
             </Button>
           )}
-          {searching && <MagnifyingGlassIcon className="ml-4 w-6 h-6 text-gray-400" />}
+          {<MagnifyingGlassIcon className={"w-6 h-6 text-gray-400 absolute right-0"} />}
         </div>
         <ScrollArea className="h-[70vh] p-4">
           <ul>
             {data.items.map(item => (
-              <li key={item.id} className="flex flex-col w-[220px]">
+              <li key={crypto.randomUUID()} className="flex flex-col w-[220px]">
                 <div className="flex flex-row">
                   {favorites?.includes(item.id) ? (
                     <StarFilledIcon
@@ -176,26 +177,28 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
                     />
                   )}
                   <div className="ml-2">
-                    <p className="max-w-44 max-h-12 overflow-ellipsis line-clamp-2">{item.title}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm max-w-44 max-h-12 overflow-ellipsis line-clamp-2">{item.title}</p>
+                    <p className="text-xs text-gray-500">
                       {truncate(item.description, {
                         length: 30,
                       })}
                     </p>
                   </div>
                 </div>
-                <Image
-                  priority
-                  src={item.image}
-                  alt={item.title}
-                  width="220"
-                  height="0"
-                  style={{
-                    borderRadius: "10%",
-                    marginBottom: "2rem",
-                    height: "auto",
-                  }}
-                />
+                {item.image && (
+                  <Image
+                    priority
+                    src={item.image}
+                    alt={item.title}
+                    width="220"
+                    height="0"
+                    style={{
+                      borderRadius: "10%",
+                      marginBottom: "2rem",
+                      height: "auto",
+                    }}
+                  />
+                )}
               </li>
             ))}
           </ul>

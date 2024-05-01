@@ -13,9 +13,9 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
     res.json().then(data => {
       return data.data
         ?.map(({ node }: any) => ({
-          id: node.id,
+          id: String(node.id),
           title: node.title,
-          image: node.main_picture.medium,
+          image: node.main_picture?.medium,
         }))
         ?.filter((res: any) => !excludeIds.includes(res.id))
     })
@@ -75,13 +75,13 @@ export const searchAnimes = async (search: string, limit = 1): Promise<Result<Da
     }
   )
     .then(res =>
-      res.json().then(data => {
+      res.json().then(({ data }) => {
         return {
           status: "success",
           data: {
             type: "animes",
-            items: data.data?.map(({ node }: any) => ({
-              id: node.id,
+            items: data?.map(({ node }: any) => ({
+              id: String(node.id),
               title: node.title,
               image: node.main_picture.medium,
             })),
@@ -120,9 +120,9 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
             status: "success",
             data: {
               items: data.data.map(({ node, list_status }: any) => ({
-                id: node.id,
+                id: String(node.id),
                 title: node.title,
-                image: node.main_picture.medium,
+                image: node.main_picture?.medium,
                 score: list_status?.score,
               })),
               hasNext: !!data.paging.next,
