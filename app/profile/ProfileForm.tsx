@@ -118,10 +118,10 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   )
 
   return (
-    <Card className="m-auto py-8 p-6 max-h-[80vh]">
+    <Card className="m-auto py-4 p-2 max-h-[80vh]">
       {success && <SuccessAlert message={success} />}
       {error && <ErrorAlert message={error} />}
-      <CardHeader>
+      <CardHeader className="p-2">
         <Avatar className="rounded-sm size-32 m-auto">
           <AvatarImage src={avatarUrl} alt={user?.username ?? undefined} />
           <AvatarFallback>{(user?.full_name as string).split(" ").map(s => s[0].toUpperCase())}</AvatarFallback>
@@ -146,7 +146,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       <Form {...profileForm}>
         <form key="login" onSubmit={profileForm.handleSubmit(updateProfile)}>
           <CardContent>
-            <div className="flex flex-col gap-2 justify-around">
+            <div className="flex flex-col gap-1 justify-around">
               <FormField
                 control={profileForm.control}
                 name="username"
@@ -238,7 +238,6 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
           </CardContent>
           <CardFooter>
             <Button
-              className="mt-1"
               type="submit"
               disabled={updating || profileForm.formState.isSubmitting || !profileForm.formState.isDirty}
             >
