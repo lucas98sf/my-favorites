@@ -25,18 +25,11 @@ export type Data = {
   items: FavoriteItem[]
 }
 
-export async function getFavorites(type: FavoriteType): Promise<Result<Data>> {
+export async function getFavorites(userId: string, type: FavoriteType): Promise<Result<Data>> {
   try {
     const client = createSupabaseServerClient()
-    const {
-      data: { user },
-    } = await client.auth.getUser()
 
-    const { data, error, statusText } = await client
-      .from("favorites")
-      .select("*")
-      .eq("user_id", user?.id as string)
-      .single()
+    const { data, error, statusText } = await client.from("favorites").select("*").eq("user_id", userId).single()
 
     if (error) {
       if (error.code === "PGRST116") {
@@ -56,7 +49,7 @@ export async function getFavorites(type: FavoriteType): Promise<Result<Data>> {
     }
 
     if (type === "tracks") {
-      const spotifyToken = await getSpotifyToken()
+      const spotifyToken = await getSpotifyToken(userId)
 
       if (spotifyToken.status === "error") {
         return {
@@ -135,24 +128,19 @@ export async function handleFavorites({
 
 export async function favoriteItem({
   id,
+  userId,
   type,
   action = "add",
 }: {
+  userId: string
   id: string
   type: FavoriteType
   action: "add" | "remove"
 }): Promise<Result<Favorites["tracks"]>> {
   try {
     const client = createSupabaseServerClient()
-    const {
-      data: { user },
-    } = await client.auth.getUser()
 
-    const { data: currentData } = await client
-      .from("favorites")
-      .select("*")
-      .eq("user_id", user?.id as string)
-      .single()
+    const { data: currentData } = await client.from("favorites").select("*").eq("user_id", userId).single()
 
     const update = await handleFavorites({ currentData, id, type, action })
 
@@ -160,7 +148,7 @@ export async function favoriteItem({
       .from("favorites")
       .upsert(
         {
-          user_id: user?.id,
+          user_id: userId,
           ...update,
         },
         { onConflict: "user_id" }

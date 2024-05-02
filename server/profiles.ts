@@ -66,21 +66,18 @@ export async function updateUserProfile(data: Partial<Profile & { user_id: strin
 
 export type ProfileData = {
   avatar_url: string
-  username: string | null
+  username: string
   full_name: string | null
 }
 
-export async function getProfileData(): Promise<Result<ProfileData>> {
+export async function getProfileData(userId: string): Promise<Result<ProfileData>> {
   try {
     const client = createSupabaseServerClient()
-    const {
-      data: { user },
-    } = await client.auth.getUser()
 
     const { data, error, statusText } = await client
       .from("profiles")
       .select("username, full_name, avatar_url")
-      .eq("user_id", user?.id as string)
+      .eq("user_id", userId)
       .single()
 
     if (error) {
@@ -95,7 +92,7 @@ export async function getProfileData(): Promise<Result<ProfileData>> {
       status: "success",
       data: {
         avatar_url: data?.avatar_url as string,
-        username: data?.username,
+        username: data?.username as string,
         full_name: data?.full_name,
       },
     }

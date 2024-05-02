@@ -5,7 +5,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export async function getSpotifyToken(): Promise<
+const spotifyClient = new SpotifyWebApi({
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+})
+
+export async function getSpotifyToken(userId: string | null = null): Promise<
   Result<{
     access_token: string | null
     refresh_token: string | null
@@ -14,59 +19,74 @@ export async function getSpotifyToken(): Promise<
 > {
   try {
     const client = createSupabaseServerClient()
-    const {
-      data: { user },
-    } = await client.auth.getUser()
 
-    const { data, error, statusText } = await client
-      .from("spotify_data")
-      .select("access_token, refresh_token, expires_at")
-      .eq("user_id", user?.id as string)
-      .single()
-
-    if (data?.expires_at && data.expires_at < Date.now()) {
-      console.log("Refreshing token")
-
-      const spotifyApi = new SpotifyWebApi({
-        refreshToken: data.refresh_token as string,
-        clientId: process.env.SPOTIFY_CLIENT_ID,
-        clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      })
-      const newTokenData = await spotifyApi.refreshAccessToken()
-
-      await client
+    if (userId) {
+      const { data, error } = await client
         .from("spotify_data")
-        .update({
-          access_token: newTokenData?.body.access_token,
-          expires_at: newTokenData?.body.expires_in * 1000 + Date.now(),
-          refresh_token: newTokenData?.body.refresh_token,
+        .select("access_token, refresh_token, expires_at")
+        .eq("user_id", userId)
+        .single()
+
+      if (data?.expires_at && data.expires_at < Date.now()) {
+        console.log("Refreshing token")
+
+        const spotifyApi = new SpotifyWebApi({
+          refreshToken: data.refresh_token as string,
+          clientId: process.env.SPOTIFY_CLIENT_ID,
+          clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
         })
-        .eq("user_id", user?.id as string)
+        const newTokenData = await spotifyApi.refreshAccessToken()
+
+        await client
+          .from("spotify_data")
+          .update({
+            access_token: newTokenData?.body.access_token,
+            expires_at: newTokenData?.body.expires_in * 1000 + Date.now(),
+            refresh_token: newTokenData?.body.refresh_token,
+          })
+          .eq("user_id", userId)
+
+        return {
+          status: "success",
+          data: {
+            access_token: newTokenData?.body.access_token,
+            expires_at: newTokenData?.body.expires_in * 1000 + Date.now(),
+            refresh_token: newTokenData?.body.refresh_token as string,
+          },
+        }
+      }
+
+      if (error) {
+        const data = await spotifyClient.clientCredentialsGrant()
+
+        return {
+          status: "success",
+          data: {
+            access_token: data.body.access_token,
+            refresh_token: null,
+            expires_at: data.body.expires_in * 1000 + Date.now(),
+          },
+        }
+      }
 
       return {
         status: "success",
         data: {
-          access_token: newTokenData?.body.access_token,
-          expires_at: newTokenData?.body.expires_in * 1000 + Date.now(),
-          refresh_token: newTokenData?.body.refresh_token as string,
+          access_token: data?.access_token,
+          refresh_token: data?.refresh_token,
+          expires_at: data?.expires_at,
         },
       }
     }
 
-    if (error) {
-      return {
-        status: "error",
-        message: "There was an error getting your spotify token",
-        code: statusText,
-      }
-    }
+    const data = await spotifyClient.clientCredentialsGrant()
 
     return {
       status: "success",
       data: {
-        access_token: data?.access_token,
-        refresh_token: data?.refresh_token,
-        expires_at: data?.expires_at,
+        access_token: data.body.access_token,
+        refresh_token: null,
+        expires_at: data.body.expires_in * 1000 + Date.now(),
       },
     }
   } catch (error) {
@@ -78,29 +98,42 @@ export async function getSpotifyToken(): Promise<
   }
 }
 
-export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
+export async function getSpotifyData(userId: string, limit = 4): Promise<Result<Data>> {
   try {
-    const spotifyToken = await getSpotifyToken()
+    const spotifyToken = await getSpotifyToken(userId)
 
     if (spotifyToken.status === "error") {
       return {
         status: "error",
-        message: "There was an error getting your spotify data",
+        message: "There was an error getting your spotify token",
       }
     }
 
-    let spotifyApiData = await getTopTracks({ spotifyToken: spotifyToken.data.access_token as string, limit })
+    if (!spotifyToken.data.refresh_token) {
+      const spotifyApiData = await getUserTopTracks({ spotifyToken: spotifyToken.data.access_token as string, limit })
 
-    if (spotifyApiData.status === "error") {
+      if (spotifyApiData.status === "error") {
+        return {
+          status: "success",
+          data: {
+            type: "tracks",
+            items: [],
+          },
+        }
+      }
+
       return {
-        status: "error",
-        message: "There was an error fetching your spotify data",
+        status: "success",
+        data: spotifyApiData.data,
       }
     }
 
     return {
       status: "success",
-      data: spotifyApiData.data,
+      data: {
+        type: "tracks",
+        items: [],
+      },
     }
   } catch (error) {
     console.error(error)
@@ -111,7 +144,7 @@ export async function getSpotifyData(limit = 4): Promise<Result<Data>> {
   }
 }
 
-export async function getTopTracks({
+export async function getUserTopTracks({
   spotifyToken,
   limit,
 }: {
@@ -129,12 +162,13 @@ export async function getTopTracks({
           status: "success",
           data: {
             type: "tracks",
-            items: data.items.map((item: any) => ({
-              id: item.id,
-              title: item.name,
-              description: item.artists?.[0]?.name,
-              image: item.album?.images?.[0]?.url,
-            })),
+            items:
+              data.items?.map((item: any) => ({
+                id: item.id,
+                title: item.name,
+                description: item.artists?.[0]?.name,
+                image: item.album?.images?.[0]?.url,
+              })) ?? [],
           },
         } as Result<Data>
       })

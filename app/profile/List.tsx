@@ -15,11 +15,12 @@ import { getSpotifyToken, searchTrack as searchTracks } from "@/server/spotify"
 import { searchMovies } from "@/server/tmdb"
 
 interface ListProps {
+  userId: string
   data: Data
   favorites: string[]
 }
 
-const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => {
+const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorites }) => {
   const [searching, setSearching] = useState(false)
   const [data, setData] = useState(givenData)
   const [favorites, setFavorites] = useState<string[]>(givenFavorites)
@@ -29,9 +30,9 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
   const favoriteUserItem = useCallback(
     async (id: string, type: FavoriteType, action: "add" | "remove" = "add") => {
       setFavorites((await handleFavorites({ currentData: { [type]: favorites }, id, type, action }))[type])
-      await favoriteItem({ id, type, action })
+      await favoriteItem({ userId, id, type, action })
     },
-    [favorites]
+    [favorites, userId]
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- debounce messes with the checking
@@ -40,7 +41,7 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
       async searchValue => {
         if (searchValue === "") {
           setSearching(true)
-          const favoritesData = await getFavorites(data.type)
+          const favoritesData = await getFavorites(userId, data.type)
 
           if (favoritesData.status === "error") {
             console.error(favoritesData.message)
@@ -70,7 +71,7 @@ const List: FC<ListProps> = ({ data: givenData, favorites: givenFavorites }) => 
           case "tracks": {
             setSearching(true)
 
-            const spotifyToken = await getSpotifyToken()
+            const spotifyToken = await getSpotifyToken(userId)
 
             if (spotifyToken.status === "error") {
               return

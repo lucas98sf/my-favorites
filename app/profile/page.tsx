@@ -1,6 +1,5 @@
 import { concat, take } from "lodash"
 
-import List from "@/components/List"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { FavoriteItem, getFavorites } from "@/server/favorites"
 import { getLetterboxdFavorites } from "@/server/letterboxd"
@@ -9,6 +8,7 @@ import { getUserProfile } from "@/server/profiles"
 import { getSpotifyData } from "@/server/spotify"
 import { getTopRatedMovies, searchMovies } from "@/server/tmdb"
 
+import List from "./List"
 import ProfileForm from "./ProfileForm"
 
 export default async function ProfilePage() {
@@ -27,11 +27,11 @@ export default async function ProfilePage() {
     return
   }
 
-  const spotifyData = await getSpotifyData(50)
+  const spotifyData = await getSpotifyData(user.id, 50)
 
-  const favoriteMoviesData = await getFavorites("movies")
-  const favoriteTracksData = await getFavorites("tracks")
-  const favoriteAnimesData = await getFavorites("animes")
+  const favoriteMoviesData = await getFavorites(user.id, "movies")
+  const favoriteTracksData = await getFavorites(user.id, "tracks")
+  const favoriteAnimesData = await getFavorites(user.id, "animes")
 
   const letterboxdData = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
   let letterboxdFavorites: FavoriteItem[] = []
@@ -70,6 +70,7 @@ export default async function ProfilePage() {
       />
       {spotifyData.status === "success" && (
         <List
+          userId={user.id}
           data={{
             type: "tracks",
             items: take(
@@ -89,6 +90,7 @@ export default async function ProfilePage() {
       )}
       {moviesData?.status === "success" && (
         <List
+          userId={user.id}
           data={{
             type: "movies",
             items: take(
@@ -108,6 +110,7 @@ export default async function ProfilePage() {
       )}
       {animesData?.status === "success" && (
         <List
+          userId={user.id}
           data={{
             type: "animes",
             items: take(
