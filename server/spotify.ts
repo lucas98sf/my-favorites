@@ -12,9 +12,9 @@ const spotifyClient = new SpotifyWebApi({
 
 export async function getSpotifyToken(userId: string | null = null): Promise<
   Result<{
-    access_token: string | null
+    access_token: string
     refresh_token: string | null
-    expires_at: number | null
+    expires_at: number
   }>
 > {
   try {
@@ -72,9 +72,9 @@ export async function getSpotifyToken(userId: string | null = null): Promise<
       return {
         status: "success",
         data: {
-          access_token: data?.access_token,
+          access_token: data?.access_token as string,
           refresh_token: data?.refresh_token,
-          expires_at: data?.expires_at,
+          expires_at: data?.expires_at as number,
         },
       }
     }
@@ -98,7 +98,7 @@ export async function getSpotifyToken(userId: string | null = null): Promise<
   }
 }
 
-export async function getSpotifyData(userId: string, limit = 4): Promise<Result<Data>> {
+export async function getSpotifyData(userId: string | null = null, limit = 4): Promise<Result<Data>> {
   try {
     const spotifyToken = await getSpotifyToken(userId)
 
@@ -109,31 +109,21 @@ export async function getSpotifyData(userId: string, limit = 4): Promise<Result<
       }
     }
 
-    if (!spotifyToken.data.refresh_token) {
-      const spotifyApiData = await getUserTopTracks({ spotifyToken: spotifyToken.data.access_token as string, limit })
+    const spotifyApiData = await getUserTopTracks({ spotifyToken: spotifyToken.data.access_token as string, limit })
 
-      if (spotifyApiData.status === "error") {
-        return {
-          status: "success",
-          data: {
-            type: "tracks",
-            items: [],
-          },
-        }
-      }
-
+    if (spotifyApiData.status === "error") {
       return {
         status: "success",
-        data: spotifyApiData.data,
+        data: {
+          type: "tracks",
+          items: [],
+        },
       }
     }
 
     return {
       status: "success",
-      data: {
-        type: "tracks",
-        items: [],
-      },
+      data: spotifyApiData.data,
     }
   } catch (error) {
     console.error(error)

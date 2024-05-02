@@ -1,4 +1,5 @@
 "use server"
+import axios from "axios"
 import { omit } from "lodash"
 import { cache } from "react"
 
@@ -39,23 +40,23 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
 }
 
 export const getAnimeById = cache(async (id: string): Promise<Result<FavoriteItem>> => {
-  return fetch(`https://api.myanimelist.net/v2/anime/${id}`, {
-    headers: {
-      "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
-    },
-  })
-    .then(res =>
-      res.json().then(
-        data =>
-          ({
-            status: "success",
-            data: {
-              id: String(data.id),
-              title: data.title,
-              image: data.main_picture.medium,
-            },
-          }) as Result<FavoriteItem>
-      )
+  return axios
+    .get(`https://api.myanimelist.net/v2/anime/${id}`, {
+      headers: {
+        "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
+      },
+      timeout: 1000,
+    })
+    .then(
+      res =>
+        ({
+          status: "success",
+          data: {
+            id: String(res.data.id),
+            title: res.data.title,
+            image: res.data.main_picture.medium,
+          },
+        }) as Result<FavoriteItem>
     )
     .catch(error => {
       console.error("!!!", id, error)

@@ -67,10 +67,7 @@ const Profile: FC<{
                       src={movie.image}
                       width="110"
                       height="165"
-                      style={{
-                        borderRadius: "10%",
-                        height: "auto",
-                      }}
+                      className="w-[110px] h-[165px] rounded-sm object-cover"
                     />
                   </div>
                 ))}
@@ -95,10 +92,7 @@ const Profile: FC<{
                       src={anime.image}
                       width="110"
                       height="165"
-                      style={{
-                        borderRadius: "10%",
-                        height: "auto",
-                      }}
+                      className="w-[110px] h-[165px] rounded-sm object-fill"
                     />
                   </div>
                 ))}
