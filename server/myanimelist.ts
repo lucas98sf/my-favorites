@@ -16,7 +16,7 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
     return cached
   }
 
-  const result = await fetch("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=50", {
+  const result = await fetch("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=40", {
     headers: {
       "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
     },

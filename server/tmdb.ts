@@ -21,7 +21,7 @@ export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: stri
     )
   }
 
-  const result = await Promise.all([requestTMDBApi(1), requestTMDBApi(2), requestTMDBApi(3)]).catch(error => {
+  const result = await Promise.all([requestTMDBApi(1), requestTMDBApi(2)]).catch(error => {
     console.error(error)
     return {
       status: "error",

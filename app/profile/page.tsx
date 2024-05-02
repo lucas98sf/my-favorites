@@ -93,7 +93,7 @@ export default async function ProfilePage() {
                     )
                   : spotifyData.data.items
               ),
-              50
+              40
             ),
           }}
           favorites={favoriteTracksData.status === "success" ? favoriteTracksData.data.items.map(({ id }) => id) : []}
@@ -113,7 +113,7 @@ export default async function ProfilePage() {
                     )
                   : moviesData.data.items
               ),
-              50
+              40
             ),
           }}
           favorites={favoriteMoviesData.status === "success" ? favoriteMoviesData.data.items.map(({ id }) => id) : []}
@@ -133,7 +133,7 @@ export default async function ProfilePage() {
                     )
                   : animesData.data.items
               ),
-              50
+              40
             ),
           }}
           favorites={favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items.map(({ id }) => id) : []}
@@ -153,7 +153,7 @@ export default async function ProfilePage() {
                     )
                   : gamesData.data.items
               ),
-              50
+              40
             ),
           }}
           favorites={favoriteGamesData.status === "success" ? favoriteGamesData.data.items.map(({ id }) => id) : []}
