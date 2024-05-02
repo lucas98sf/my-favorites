@@ -4,6 +4,7 @@ import { Sono } from "next/font/google"
 
 import { NavBar } from "@/components/NavBar"
 import { ThemeProvider } from "@/components/ThemeProvider"
+import { cn } from "@/lib/utils"
 
 const defaultUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
 
@@ -22,8 +23,8 @@ export const dynamic = "force-dynamic"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={sono.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground">
+    <html lang="en" className={cn(sono.className, "h-[100%] overflow-hidden")} suppressHydrationWarning>
+      <body className="bg-background text-foreground h-[100%] overflow-hidden">
         <ThemeProvider
           themes={["light", "dark"]}
           attribute="class"

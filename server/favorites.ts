@@ -1,5 +1,6 @@
 "use server"
 import { filter, takeRight } from "lodash"
+import PQueue from "p-queue"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
@@ -79,7 +80,8 @@ export async function getFavorites(userId: string, type: FavoriteType): Promise<
       }
     }
     if (type === "animes") {
-      const favoriteAnimes = await Promise.all(data.animes?.map((id: string) => getAnimeById(id)))
+      const queue = new PQueue({ concurrency: 1, interval: 250 })
+      const favoriteAnimes = await queue.addAll(data.animes?.map((id: string) => () => getAnimeById(id)))
       return {
         status: "success",
         data: {

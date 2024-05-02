@@ -141,7 +141,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
   }, [search])
 
   return (
-    <Card>
+    <Card className="max-h-[80vh]">
       <CardHeader>{data.type}</CardHeader>
       <CardContent>
         <Label>Search</Label>
@@ -175,7 +175,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
             <MagnifyingGlassIcon className={"w-6 h-6 text-gray-400"} />
           </Button>
         </div>
-        <ScrollArea className="h-[70vh] p-4">
+        <ScrollArea className="h-[60vh] p-4">
           <ul>
             {data.items.map(item => (
               <li key={crypto.randomUUID()} className="flex flex-col w-[220px]">

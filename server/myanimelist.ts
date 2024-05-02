@@ -1,7 +1,7 @@
 "use server"
-import axios from "axios"
+import ky from "ky"
 import { omit } from "lodash"
-import { cache } from "react"
+import NodeCache from "node-cache"
 
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
@@ -39,33 +39,53 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
   }
 }
 
-export const getAnimeById = cache(async (id: string): Promise<Result<FavoriteItem>> => {
-  return axios
-    .get(`https://api.myanimelist.net/v2/anime/${id}`, {
+const cache = new NodeCache({
+  stdTTL: 60 * 60 * 24,
+})
+export const getAnimeById = async (id: string) => {
+  const cached = cache.get<Result<FavoriteItem>>(id)
+  if (cached) {
+    return cached
+  }
+
+  const result = await ky
+    .get(`https://api.myanimelist.net/v1/anime/${id}`, {
       headers: {
         "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
       },
-      timeout: 1000,
     })
+    .json<any>()
     .then(
-      res =>
+      data =>
         ({
           status: "success",
           data: {
-            id: String(res.data.id),
-            title: res.data.title,
-            image: res.data.main_picture.medium,
+            id: String(data.id),
+            title: data.title,
+            image: data.main_picture?.medium,
           },
         }) as Result<FavoriteItem>
     )
     .catch(error => {
-      console.error("!!!", id, error)
-      return {
-        status: "error",
-        message: "Could not find MAL data",
-      }
+      return ky
+        .get(`https://api.jikan.moe/v4/anime/${id}`)
+        .json<any>()
+        .then(data => {
+          return {
+            status: "success",
+            data: {
+              id: String(data.mal_id),
+              title: data.title,
+              image: data.images.jpg.image_url,
+            },
+          } as Result<FavoriteItem>
+        })
     })
-})
+
+  cache.set(id, result)
+
+  return result
+}
 
 export const searchAnimes = async (search: string, limit = 1): Promise<Result<Data>> => {
   return fetch(
