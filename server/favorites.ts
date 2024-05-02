@@ -123,7 +123,7 @@ export async function handleFavorites({
 }) {
   return action === "remove"
     ? { [type]: filter(currentData?.[type] ?? [], currentDataId => currentDataId != id) }
-    : { [type]: takeRight([...(currentData?.[type] ?? []), id], 4) }
+    : { [type]: takeRight([...new Set([...(currentData?.[type] ?? []), id])], 4) }
 }
 
 export async function favoriteItem({
