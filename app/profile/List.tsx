@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { searchGames } from "@/server/backloggd"
 import { Data, favoriteItem, FavoriteType, getFavorites, handleFavorites } from "@/server/favorites"
 import { searchAnimes } from "@/server/myanimelist"
 import { getSpotifyToken, searchTrack as searchTracks } from "@/server/spotify"
@@ -118,6 +119,16 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
             return
           }
           case "games": {
+            setSearching(true)
+
+            const animesData = await searchGames(searchValue, 10)
+
+            if (animesData.status === "error") {
+              return
+            }
+
+            setData(animesData.data)
+            setSearching(false)
             return
           }
           default:

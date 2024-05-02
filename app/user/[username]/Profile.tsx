@@ -12,7 +12,8 @@ const Profile: FC<{
   spotifyData: Data
   moviesData: Data
   animesData: Data
-}> = ({ profileData, spotifyData, moviesData, animesData }) => {
+  gamesData: Data
+}> = ({ profileData, spotifyData, moviesData, animesData, gamesData }) => {
   return (
     <Card className="m-auto py-10 p-8 mx-24">
       <div className="tracks flex flex-col gap-2">
@@ -90,6 +91,31 @@ const Profile: FC<{
                     <Image
                       alt={anime.title}
                       src={anime.image}
+                      width="110"
+                      height="165"
+                      className="w-[110px] h-[165px] rounded-sm object-fill"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {gamesData.items.length > 0 && (
+            <div className="flex flex-col">
+              <span>Games</span>
+              <div className="grid grid-cols-2 gap-4">
+                {gamesData?.items?.map((game: any, index: number) => (
+                  <div key={index} className="w-28">
+                    <div className="h-8 w-28 flex break-after-all">
+                      <p className="text-xs overflow-ellipsis self-end inline-block">
+                        {truncate(game.title, {
+                          length: 50,
+                        })}
+                      </p>
+                    </div>
+                    <Image
+                      alt={game.title}
+                      src={game.image}
                       width="110"
                       height="165"
                       className="w-[110px] h-[165px] rounded-sm object-fill"

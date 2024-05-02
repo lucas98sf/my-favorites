@@ -41,31 +41,31 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          backloggd_username: string | null
           created_at: string
           full_name: string | null
           letterboxd_username: string | null
           mal_username: string | null
+          steam_id: string | null
           user_id: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
-          backloggd_username?: string | null
           created_at?: string
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
+          steam_id?: string | null
           user_id?: string
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
-          backloggd_username?: string | null
           created_at?: string
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
+          steam_id?: string | null
           user_id?: string
           username?: string | null
         }

@@ -26,6 +26,7 @@ export default async function UsernamePage({ params }: { params: { username: str
   const favoriteTracksData = await getFavorites(data.user_id, "tracks")
   const favoriteMoviesData = await getFavorites(data.user_id, "movies")
   const favoriteAnimesData = await getFavorites(data.user_id, "animes")
+  const favoriteGamesData = await getFavorites(data.user_id, "games")
 
   if (profileData.status === "error") {
     console.error(profileData.message)
@@ -52,6 +53,11 @@ export default async function UsernamePage({ params }: { params: { username: str
     return
   }
 
+  if (favoriteGamesData.status === "error") {
+    console.error(favoriteGamesData.message)
+    return
+  }
+
   return (
     <div className="flex flex-row">
       <Profile
@@ -70,6 +76,7 @@ export default async function UsernamePage({ params }: { params: { username: str
         }}
         moviesData={favoriteMoviesData.data}
         animesData={favoriteAnimesData.data}
+        gamesData={favoriteGamesData.data}
       />
     </div>
   )

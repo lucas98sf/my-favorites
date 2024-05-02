@@ -1,11 +1,13 @@
 import { concat, take } from "lodash"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { getPopularGames } from "@/server/backloggd"
 import { FavoriteItem, getFavorites } from "@/server/favorites"
 import { getLetterboxdFavorites } from "@/server/letterboxd"
 import { getTopRatedAnimes, getUserTopRatedAnimes } from "@/server/myanimelist"
 import { getUserProfile } from "@/server/profiles"
 import { getSpotifyData } from "@/server/spotify"
+import { getUserTopSteamGames } from "@/server/steam"
 import { getTopRatedMovies, searchMovies } from "@/server/tmdb"
 
 import List from "./List"
@@ -32,6 +34,7 @@ export default async function ProfilePage() {
   const favoriteMoviesData = await getFavorites(user.id, "movies")
   const favoriteTracksData = await getFavorites(user.id, "tracks")
   const favoriteAnimesData = await getFavorites(user.id, "animes")
+  const favoriteGamesData = await getFavorites(user.id, "games")
 
   const letterboxdData = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
   let letterboxdFavorites: FavoriteItem[] = []
@@ -53,6 +56,14 @@ export default async function ProfilePage() {
     animesData.data.items.unshift(...malFavorites.data.items)
   }
 
+  const steamFavorites = await getUserTopSteamGames(profileData.data.steam_id as string)
+  const gamesData = await getPopularGames({
+    excludeIds: favoriteGamesData.status === "success" ? favoriteGamesData.data.items.map(({ id }) => id) : [],
+  })
+  if (steamFavorites.status === "success" && gamesData.status === "success") {
+    gamesData.data.items.unshift(...steamFavorites.data.items)
+  }
+
   return (
     <div className="flex flex-row gap-6">
       <ProfileForm
@@ -60,7 +71,7 @@ export default async function ProfilePage() {
         user={{
           id: user.id,
           email: user.email as string,
-          backloggd_username: profileData.data.backloggd_username ?? undefined,
+          steam_id: profileData.data.steam_id ?? undefined,
           full_name: profileData.data.full_name ?? undefined,
           letterboxd_username: profileData.data.letterboxd_username ?? undefined,
           mal_username: profileData.data.mal_username ?? undefined,
@@ -126,6 +137,26 @@ export default async function ProfilePage() {
             ),
           }}
           favorites={favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items.map(({ id }) => id) : []}
+        />
+      )}
+      {gamesData?.status === "success" && (
+        <List
+          userId={user.id}
+          data={{
+            type: "games",
+            items: take(
+              concat(
+                favoriteGamesData.status === "success" ? favoriteGamesData.data.items : [],
+                favoriteGamesData.status === "success"
+                  ? gamesData.data.items.filter(
+                      ({ id }) => !favoriteGamesData.data.items.some((favorite: any) => favorite.id === id)
+                    )
+                  : gamesData.data.items
+              ),
+              50
+            ),
+          }}
+          favorites={favoriteGamesData.status === "success" ? favoriteGamesData.data.items.map(({ id }) => id) : []}
         />
       )}
     </div>

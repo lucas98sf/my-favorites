@@ -6,7 +6,16 @@ import NodeCache from "node-cache"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
+const cache = new NodeCache({
+  stdTTL: 60 * 60 * 24,
+})
+
 export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
+  const cached = cache.get<Result<Data>>(`topRatedAnimes-${excludeIds.join(",")}`)
+  if (cached) {
+    return cached
+  }
+
   const result = await fetch("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=50", {
     headers: {
       "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
@@ -30,18 +39,19 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
     }
   }
 
-  return {
+  const response = {
     status: "success",
     data: {
       type: "animes",
       items: result,
     },
-  }
+  } as Result<Data>
+
+  cache.set(`topRatedAnimes-${excludeIds.join(",")}`, response)
+
+  return response
 }
 
-const cache = new NodeCache({
-  stdTTL: 60 * 60 * 24,
-})
 export const getAnimeById = async (id: string) => {
   const cached = cache.get<Result<FavoriteItem>>(id)
   if (cached) {
@@ -121,6 +131,11 @@ export const searchAnimes = async (search: string, limit = 1): Promise<Result<Da
 }
 
 export const getUserTopRatedAnimes = async (username: string): Promise<Result<Data>> => {
+  const cached = cache.get<Result<Data>>(`user-TopRatedAnimes-${username}`)
+  if (cached) {
+    return cached
+  }
+
   if (!username) {
     return {
       status: "error",
@@ -181,7 +196,7 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
     }
   }
 
-  return {
+  const response = {
     status: "success",
     data: {
       type: "animes",
@@ -190,5 +205,9 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
         .sort((a: any, b: any) => b.score - a.score)
         .map((item: any) => omit(item, "score") as FavoriteItem),
     },
-  }
+  } as Result<Data>
+
+  cache.set(`user-TopRatedAnimes-${username}`, response)
+
+  return response
 }

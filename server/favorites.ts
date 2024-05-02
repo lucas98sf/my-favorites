@@ -4,6 +4,7 @@ import PQueue from "p-queue"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
+import { getGameById } from "@/server/backloggd"
 import { getAnimeById } from "@/server/myanimelist"
 import { getSpotifyToken, getTrackById } from "@/server/spotify"
 import { getMovieById } from "@/server/tmdb"
@@ -91,11 +92,12 @@ export async function getFavorites(userId: string, type: FavoriteType): Promise<
       }
     }
     if (type === "games") {
+      const favoriteGames = await Promise.all(data.games?.map((id: string) => getGameById(id)))
       return {
         status: "success",
         data: {
           type: "games",
-          items: [],
+          items: favoriteGames.flatMap(game => (game.status === "success" ? [game.data] : [])),
         },
       }
     }

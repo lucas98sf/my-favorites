@@ -30,6 +30,11 @@ const nextConfig = {
         hostname: "cdn.myanimelist.net",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "images.igdb.com",
+        port: "",
+      },
     ],
   },
 }

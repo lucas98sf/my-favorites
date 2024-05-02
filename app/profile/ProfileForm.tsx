@@ -26,7 +26,7 @@ const profileSchema = z.object({
   full_name: z.string().min(3).optional(),
   mal_username: z.string().min(3).optional(),
   letterboxd_username: z.string().min(3).optional(),
-  backloggd_username: z.string().min(3).optional(),
+  steam_id: z.string().min(17).optional(),
 })
 
 interface ProfileFormProps {
@@ -49,7 +49,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       full_name: user.full_name,
       mal_username: user.mal_username,
       letterboxd_username: user.letterboxd_username,
-      backloggd_username: user.backloggd_username,
+      steam_id: user.steam_id,
     },
     reValidateMode: "onBlur",
   })
@@ -222,11 +222,11 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
               />
               <FormField
                 control={profileForm.control}
-                name="backloggd_username"
+                name="steam_id"
                 disabled={updating}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Backloggd username</FormLabel>
+                    <FormLabel>Steam Id</FormLabel>
                     <FormControl>
                       <Input type="text" {...field} />
                     </FormControl>
