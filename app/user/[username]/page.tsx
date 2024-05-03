@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getFavorites } from "@/server/favorites"
 import { getProfileData } from "@/server/profiles"
-import { getSpotifyData } from "@/server/spotify"
+import { getUserSpotifyData } from "@/server/spotify"
 
 import Profile from "./Profile"
 
@@ -22,7 +22,7 @@ export default async function UsernamePage({ params }: { params: { username: str
   }
 
   const profileData = await getProfileData(data.user_id)
-  const spotifyData = await getSpotifyData(data.user_id)
+  const spotifyData = await getUserSpotifyData(data.user_id)
   const favoriteTracksData = await getFavorites(data.user_id, "tracks")
   const favoriteMoviesData = await getFavorites(data.user_id, "movies")
   const favoriteAnimesData = await getFavorites(data.user_id, "animes")

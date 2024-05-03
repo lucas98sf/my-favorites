@@ -124,7 +124,11 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       <CardHeader className="p-2">
         <Avatar className="rounded-sm size-32 m-auto">
           <AvatarImage src={avatarUrl} alt={user?.username ?? undefined} />
-          <AvatarFallback>{(user?.full_name as string).split(" ").map(s => s[0].toUpperCase())}</AvatarFallback>
+          <AvatarFallback>
+            {user.full_name
+              ? user.full_name.split(" ").map(s => s[0].toUpperCase())
+              : user?.username?.[0].toUpperCase()}
+          </AvatarFallback>
         </Avatar>
         <Label className="text-right" htmlFor="upload">
           {updating ? "Uploading ..." : "Upload avatar"}

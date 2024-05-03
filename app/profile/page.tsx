@@ -6,7 +6,7 @@ import { FavoriteItem, getFavorites } from "@/server/favorites"
 import { getLetterboxdFavorites } from "@/server/letterboxd"
 import { getTopRatedAnimes, getUserTopRatedAnimes } from "@/server/myanimelist"
 import { getUserProfile } from "@/server/profiles"
-import { getSpotifyData } from "@/server/spotify"
+import { getTopTracks, getUserSpotifyData } from "@/server/spotify"
 import { getUserTopSteamGames } from "@/server/steam"
 import { getTopRatedMovies, searchMovies } from "@/server/tmdb"
 
@@ -29,7 +29,11 @@ export default async function ProfilePage() {
     return
   }
 
-  const spotifyData = await getSpotifyData(user.id, 50)
+  let spotifyData = await getUserSpotifyData(user.id, 50)
+
+  if (spotifyData.status === "success" && spotifyData.data.items.length === 0) {
+    spotifyData = await getTopTracks()
+  }
 
   const favoriteMoviesData = await getFavorites(user.id, "movies")
   const favoriteTracksData = await getFavorites(user.id, "tracks")

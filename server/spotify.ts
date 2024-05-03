@@ -61,6 +61,9 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
             refresh_token: newTokenData?.body.refresh_token as string,
           },
         }
+
+        kv.set(`spotifyToken-${userId}`, result)
+        return result
       }
 
       if (error) {
@@ -74,19 +77,24 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
             expires_at: data.body.expires_in * 1000 + Date.now(),
           },
         }
+
+        kv.set(`spotifyToken-${userId}`, result)
+        return result
       }
 
-      result = {
-        status: "success",
-        data: {
-          access_token: data?.access_token as string,
-          refresh_token: data?.refresh_token as string,
-          expires_at: data?.expires_at as number,
-        },
-      }
-      kv.set(`spotifyToken-${userId}`, result)
+      if (data?.access_token && data?.refresh_token && data?.expires_at) {
+        result = {
+          status: "success",
+          data: {
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            expires_at: data.expires_at,
+          },
+        }
 
-      return result
+        kv.set(`spotifyToken-${userId}`, result)
+        return result
+      }
     }
 
     const cached = await kv.get<Result<SpotifyToken>>("spotifyToken")
@@ -117,7 +125,7 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
   }
 }
 
-export async function getSpotifyData(userId: string | null = null, limit = 4): Promise<Result<Data>> {
+export async function getUserSpotifyData(userId: string | null = null, limit = 4): Promise<Result<Data>> {
   try {
     const cached = await kv.get<Result<Data>>(`spotifyData-${userId}-${limit}`)
     if (cached) {
@@ -160,6 +168,56 @@ export async function getSpotifyData(userId: string | null = null, limit = 4): P
       message: "Could not find spotify data",
     }
   }
+}
+
+export async function getTopTracks(): Promise<Result<Data>> {
+  const cached = await kv.get<Result<Data>>("topTracks")
+  if (cached) {
+    return cached
+  }
+
+  const spotifyToken = await getSpotifyToken()
+
+  if (spotifyToken.status === "error") {
+    return {
+      status: "error",
+      message: "There was an error getting your spotify token",
+    }
+  }
+
+  const result: Result<Data> = await fetch("https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF", {
+    headers: {
+      Authorization: `Bearer ${spotifyToken.data.access_token}`,
+    },
+  })
+    .then(res =>
+      res.json().then(data => {
+        return {
+          status: "success",
+          data: {
+            type: "tracks",
+            items:
+              data.tracks.items?.map(({ track }: any) => ({
+                id: track.id,
+                title: track.name,
+                description: track.artists?.[0]?.name,
+                image: track.album?.images?.[0]?.url,
+              })) ?? [],
+          },
+        } as Result<Data>
+      })
+    )
+    .catch(error => {
+      console.error(error)
+      return {
+        status: "error",
+        message: "Could not find spotify data",
+      }
+    })
+
+  kv.set("topTracks", result)
+
+  return result
 }
 
 export async function getUserTopTracks({
