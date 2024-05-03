@@ -94,14 +94,11 @@ export const getAnimeById = async (id: string) => {
 }
 
 export const searchAnimes = async (search: string, limit = 1): Promise<Result<Data>> => {
-  return fetch(
-    `https://api.myanimelist.net/v2/anime?q=${search.replace(/[^\w\s]/gi, "").replace(/- /gi, "+")}&limit=${limit}`,
-    {
-      headers: {
-        "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
-      },
-    }
-  )
+  return fetch(`https://api.myanimelist.net/v2/anime?q=${encodeURI(search)}&limit=${limit}`, {
+    headers: {
+      "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
+    },
+  })
     .then(res =>
       res.json().then(({ data }) => {
         return {

@@ -302,7 +302,7 @@ export const searchTrack = async ({
   search: string
   limit?: number
 }): Promise<Result<Data>> => {
-  return fetch(`https://api.spotify.com/v1/search?query=${search}&type=track&offset=0&limit=${limit}`, {
+  return fetch(`https://api.spotify.com/v1/search?query=${encodeURI(search)}&type=track&offset=0&limit=${limit}`, {
     headers: {
       Authorization: `Bearer ${spotifyToken}`,
     },
@@ -313,12 +313,13 @@ export const searchTrack = async ({
           status: "success",
           data: {
             type: "tracks",
-            items: data.items.map((item: any) => ({
-              id: item.id,
-              title: item.name,
-              description: item.artists?.[0]?.name,
-              image: item.album?.images?.[0]?.url,
-            })),
+            items:
+              data.tracks?.items?.map((item: any) => ({
+                id: item.id,
+                title: item.name,
+                description: item.artists?.[0]?.name,
+                image: item.album?.images?.[0]?.url,
+              })) ?? [],
           },
         } as Result<Data>
       })
