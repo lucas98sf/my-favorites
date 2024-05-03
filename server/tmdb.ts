@@ -1,8 +1,14 @@
 "use server"
 import { Result } from "@/lib/types"
+import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
+  const cached = cache.get<Result<Data>>(`topRatedMovies-${excludeIds.join(",")}`)
+  if (cached) {
+    return cached
+  }
+
   const requestTMDBApi = async (page = 1) => {
     return fetch(`https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=${page}`, {
       headers: {
@@ -21,7 +27,7 @@ export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: stri
     )
   }
 
-  const result = await Promise.all([requestTMDBApi(1), requestTMDBApi(2)]).catch(error => {
+  const movies = await Promise.all([requestTMDBApi(1), requestTMDBApi(2)]).catch(error => {
     console.error(error)
     return {
       status: "error",
@@ -29,21 +35,29 @@ export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: stri
     }
   })
 
-  if (!Array.isArray(result)) {
-    return result as Result<Data>
+  if (!Array.isArray(movies)) {
+    return movies as Result<Data>
   }
 
-  return {
+  const result: Result<Data> = {
     status: "success",
     data: {
       type: "movies",
-      items: result.flat(),
+      items: movies.flat(),
     },
   }
+
+  cache.set(`topRatedMovies-${excludeIds.join(",")}`, result)
+
+  return result
 }
 
 export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> => {
-  return fetch(`https://api.themoviedb.org/3/movie/${id}`, {
+  const cached = cache.get<Result<FavoriteItem>>(`movieById-${id}`)
+  if (cached) {
+    return cached
+  }
+  const result: Result<FavoriteItem> = await fetch(`https://api.themoviedb.org/3/movie/${id}`, {
     headers: {
       Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
     },
@@ -68,6 +82,10 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
         message: "Could not find TMDB data",
       }
     })
+
+  cache.set(`movieById-${id}`, result)
+
+  return result
 }
 
 // unfortunately, the TMDB API does not support searching by letterboxd film id

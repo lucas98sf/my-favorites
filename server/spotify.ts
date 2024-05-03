@@ -3,6 +3,7 @@ import SpotifyWebApi from "spotify-web-api-node"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
+import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 const spotifyClient = new SpotifyWebApi({
@@ -10,17 +11,23 @@ const spotifyClient = new SpotifyWebApi({
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 })
 
-export async function getSpotifyToken(userId: string | null = null): Promise<
-  Result<{
-    access_token: string
-    refresh_token: string | null
-    expires_at: number
-  }>
-> {
+type SpotifyToken = {
+  access_token: string
+  refresh_token: string | null
+  expires_at: number
+}
+
+export async function getSpotifyToken(userId: string | null = null): Promise<Result<SpotifyToken>> {
   try {
     const client = createSupabaseServerClient()
+    let result: Result<SpotifyToken> | null = null
 
     if (userId) {
+      const cached = cache.get<Result<SpotifyToken>>(`spotifyToken-${userId}`)
+      if (cached) {
+        return cached
+      }
+
       const { data, error } = await client
         .from("spotify_data")
         .select("access_token, refresh_token, expires_at")
@@ -46,7 +53,7 @@ export async function getSpotifyToken(userId: string | null = null): Promise<
           })
           .eq("user_id", userId)
 
-        return {
+        result = {
           status: "success",
           data: {
             access_token: newTokenData?.body.access_token,
@@ -59,7 +66,7 @@ export async function getSpotifyToken(userId: string | null = null): Promise<
       if (error) {
         const data = await spotifyClient.clientCredentialsGrant()
 
-        return {
+        result = {
           status: "success",
           data: {
             access_token: data.body.access_token,
@@ -69,19 +76,27 @@ export async function getSpotifyToken(userId: string | null = null): Promise<
         }
       }
 
-      return {
+      result = {
         status: "success",
         data: {
           access_token: data?.access_token as string,
-          refresh_token: data?.refresh_token,
+          refresh_token: data?.refresh_token as string,
           expires_at: data?.expires_at as number,
         },
       }
+      cache.set(`spotifyToken-${userId}`, result)
+
+      return result
+    }
+
+    const cached = cache.get<Result<SpotifyToken>>("spotifyToken")
+    if (cached) {
+      return cached
     }
 
     const data = await spotifyClient.clientCredentialsGrant()
 
-    return {
+    result = {
       status: "success",
       data: {
         access_token: data.body.access_token,
@@ -89,6 +104,10 @@ export async function getSpotifyToken(userId: string | null = null): Promise<
         expires_at: data.body.expires_in * 1000 + Date.now(),
       },
     }
+
+    cache.set("spotifyToken", result)
+
+    return result
   } catch (error) {
     console.error(error)
     return {
@@ -100,6 +119,11 @@ export async function getSpotifyToken(userId: string | null = null): Promise<
 
 export async function getSpotifyData(userId: string | null = null, limit = 4): Promise<Result<Data>> {
   try {
+    const cached = cache.get<Result<Data>>(`spotifyData-${userId}-${limit}`)
+    if (cached) {
+      return cached
+    }
+
     const spotifyToken = await getSpotifyToken(userId)
 
     if (spotifyToken.status === "error") {
@@ -121,10 +145,14 @@ export async function getSpotifyData(userId: string | null = null, limit = 4): P
       }
     }
 
-    return {
+    const result: Result<Data> = {
       status: "success",
       data: spotifyApiData.data,
     }
+
+    cache.set(`spotifyData-${userId}-${limit}`, result)
+
+    return result
   } catch (error) {
     console.error(error)
     return {

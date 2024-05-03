@@ -86,7 +86,7 @@ export async function signInWithGoogle(): Promise<Result> {
 
 export async function signInWithSpotify(): Promise<Result> {
   const client = createSupabaseServerClient()
-  const redirectTo = `${getURL()}auth/callback/spotify`
+  const redirectTo = `${getURL()}auth/callback`
 
   const { data, error } = await client.auth.signInWithOAuth({
     provider: "spotify",

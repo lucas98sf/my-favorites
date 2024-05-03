@@ -5,9 +5,15 @@ import { take } from "lodash"
 import { parse } from "node-html-parser"
 
 import { Result } from "@/lib/types"
+import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 export const getPopularGames = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
+  const cached = cache.get<Result<Data>>(`popularGames-${excludeIds.join(",")}`)
+  if (cached) {
+    return cached
+  }
+
   const popularGames = await (await ky.get("https://www.backloggd.com/games/lib/popular/")).text()
   const games = parse(popularGames)
     .querySelectorAll(".card-img")
@@ -18,13 +24,17 @@ export const getPopularGames = async ({ excludeIds = [] }: { excludeIds?: string
     }))
     .filter((res: any) => !excludeIds.includes(res.id))
 
-  return {
+  const result = {
     status: "success",
     data: {
       type: "games",
       items: games,
     },
-  }
+  } as Result<Data>
+
+  cache.set(`popularGames-${excludeIds.join(",")}`, result)
+
+  return result
 }
 
 export const searchGames = async (search: string, limit = 1): Promise<Result<Data>> => {
@@ -51,6 +61,11 @@ export const searchGames = async (search: string, limit = 1): Promise<Result<Dat
 let igdbClient: ReturnType<typeof igdb> | null = null
 
 export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => {
+  const cached = cache.get<Result<FavoriteItem>>(`gameById-${id}`)
+  if (cached) {
+    return cached
+  }
+
   if (!igdbClient) {
     const formData = new FormData()
     formData.append("client_id", process.env.TWITCH_CLIENT_ID!)
@@ -73,7 +88,7 @@ export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => 
     }
   }
 
-  return {
+  const result: Result<FavoriteItem> = {
     status: "success",
     data: {
       id: String(game.data[0].id),
@@ -81,4 +96,8 @@ export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => 
       image: `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.data[0].cover?.image_id}.jpg`,
     },
   }
+
+  cache.set(`gameById-${id}`, result)
+
+  return result
 }

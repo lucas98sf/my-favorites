@@ -1,14 +1,10 @@
 "use server"
 import ky from "ky"
 import { omit } from "lodash"
-import NodeCache from "node-cache"
 
 import { Result } from "@/lib/types"
+import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
-
-const cache = new NodeCache({
-  stdTTL: 60 * 60 * 24,
-})
 
 export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
   const cached = cache.get<Result<Data>>(`topRatedAnimes-${excludeIds.join(",")}`)
@@ -53,7 +49,7 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
 }
 
 export const getAnimeById = async (id: string) => {
-  const cached = cache.get<Result<FavoriteItem>>(id)
+  const cached = cache.get<Result<FavoriteItem>>(`animeById-${id}`)
   if (cached) {
     return cached
   }
@@ -92,7 +88,7 @@ export const getAnimeById = async (id: string) => {
         })
     })
 
-  cache.set(id, result)
+  cache.set(`animeById-${id}`, result)
 
   return result
 }
@@ -131,7 +127,7 @@ export const searchAnimes = async (search: string, limit = 1): Promise<Result<Da
 }
 
 export const getUserTopRatedAnimes = async (username: string): Promise<Result<Data>> => {
-  const cached = cache.get<Result<Data>>(`user-TopRatedAnimes-${username}`)
+  const cached = cache.get<Result<Data>>(`userTopRatedAnimes-${username}`)
   if (cached) {
     return cached
   }
@@ -207,7 +203,7 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
     },
   } as Result<Data>
 
-  cache.set(`user-TopRatedAnimes-${username}`, response)
+  cache.set(`userTopRatedAnimes-${username}`, response)
 
   return response
 }

@@ -2,25 +2,27 @@
 import { parse } from "node-html-parser"
 
 import { Result } from "@/lib/types"
+import { cache } from "@/server"
 
-export const getLetterboxdFavorites = async (
-  username: string
-): Promise<
-  Result<
-    {
-      slug: string
-      name: string
-      image: string
-    }[]
-  >
-> => {
+type LetterboxdFavorite = {
+  slug: string
+  name: string
+  image: string
+}
+
+export const getLetterboxdFavorites = async (username: string): Promise<Result<LetterboxdFavorite[]>> => {
+  const cached = cache.get<Result<LetterboxdFavorite[]>>(`letterboxdFavorites-${username}`)
+  if (cached) {
+    return cached
+  }
+
   if (!username) {
     return {
       status: "error",
       message: "No username provided",
     }
   }
-  return fetch(`https://letterboxd.com/${username}`)
+  const result = fetch(`https://letterboxd.com/${username}`)
     .then(res =>
       res.text().then(data => {
         const root = parse(data)
@@ -39,4 +41,8 @@ export const getLetterboxdFavorites = async (
     .catch(error => {
       console.error(error)
     }) as unknown as Promise<Result<any>>
+
+  cache.set(`letterboxdFavorites-${username}`, result)
+
+  return result
 }
