@@ -73,8 +73,6 @@ export const searchGames = async (search: string, limit = 1): Promise<Result<Dat
   }
 }
 
-let igdbClient: ReturnType<typeof igdb> | null = null
-
 export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => {
   try {
     // const cached = await kv.get<Result<FavoriteItem>>(`gameById-${id}`)
@@ -82,22 +80,16 @@ export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => 
     // return cached
     // }
 
-    if (!igdbClient) {
-      let accessToken = await kv.get<string>("twitchAccessToken")
-      if (!accessToken) {
-        const formData = new FormData()
-        formData.append("client_id", process.env.TWITCH_CLIENT_ID!)
-        formData.append("client_secret", process.env.TWITCH_CLIENT_SECRET!)
-        formData.append("grant_type", "client_credentials")
-        accessToken = await ky
-          .post("https://id.twitch.tv/oauth2/token", { body: formData })
-          .then(data => data.json<any>())
-          .then(data => data.access_token)
-        if (accessToken) kv.set("twitchAccessToken", accessToken)
-      }
+    // const formData = new FormData()
+    // formData.append("client_id", process.env.TWITCH_CLIENT_ID!)
+    // formData.append("client_secret", process.env.TWITCH_CLIENT_SECRET!)
+    // formData.append("grant_type", "client_credentials")
+    // const accessToken = await ky
+    //   .post("https://id.twitch.tv/oauth2/token", { body: formData })
+    //   .then(data => data.json<any>())
+    //   .then(data => data.access_token)
 
-      igdbClient = igdb(process.env.IGDB_CLIENT_ID, accessToken as string)
-    }
+    const igdbClient = igdb(process.env.IGDB_CLIENT_ID, process.env.TWITCH_ACCESS_TOKEN)
 
     const game = await igdbClient.fields("name,cover.image_id").where(`id = ${id}`).request("/games")
 
