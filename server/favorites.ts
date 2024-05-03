@@ -28,7 +28,7 @@ export type Data = {
 }
 
 export async function getFavorites(userId: string, type: FavoriteType): Promise<Result<Data>> {
-  console.time(`getFavorites${type}`)
+  // console.time(`getFavorites${type}`)
   try {
     const client = createSupabaseServerClient()
 
@@ -63,7 +63,7 @@ export async function getFavorites(userId: string, type: FavoriteType): Promise<
       const favoriteTracks = await Promise.all(
         data.tracks?.map((id: string) => getTrackById({ id, spotifyToken: spotifyToken.data?.access_token as string }))
       )
-      console.timeEnd(`getFavorites${type}`)
+      // console.timeEnd(`getFavorites${type}`)
       return {
         status: "success",
         data: {
@@ -74,7 +74,7 @@ export async function getFavorites(userId: string, type: FavoriteType): Promise<
     }
     if (type === "movies") {
       const favoriteMovies = await Promise.all(data.movies?.map((id: string) => getMovieById(id)))
-      console.timeEnd(`getFavorites${type}`)
+      // console.timeEnd(`getFavorites${type}`)
       return {
         status: "success",
         data: {
@@ -86,7 +86,7 @@ export async function getFavorites(userId: string, type: FavoriteType): Promise<
     if (type === "animes") {
       const queue = new PQueue({ concurrency: 2, interval: 100 })
       const favoriteAnimes = await queue.addAll(data.animes?.map((id: string) => () => getAnimeById(id)))
-      console.timeEnd(`getFavorites${type}`)
+      // console.timeEnd(`getFavorites${type}`)
       return {
         status: "success",
         data: {
@@ -96,8 +96,9 @@ export async function getFavorites(userId: string, type: FavoriteType): Promise<
       }
     }
     if (type === "games") {
-      const favoriteGames = await Promise.all(data.games?.map((id: string) => getGameById(id)))
-      console.timeEnd(`getFavorites${type}`)
+      const queue = new PQueue({ concurrency: 2, interval: 100 })
+      const favoriteGames = await queue.addAll(data.games?.map((id: string) => () => getGameById(id)))
+      // console.timeEnd(`getFavorites${type}`)
       return {
         status: "success",
         data: {

@@ -20,8 +20,6 @@ const sono = Sono({
   fallback: ["sans-serif"],
 })
 
-export const dynamic = "force-dynamic"
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cn(sono.className, "h-[100%] overflow-hidden")} suppressHydrationWarning>
