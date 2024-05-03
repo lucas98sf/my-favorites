@@ -1,13 +1,13 @@
 "use server"
+import { kv } from "@vercel/kv"
 import ky from "ky"
 import { omit } from "lodash"
 
 import { Result } from "@/lib/types"
-import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
-  const cached = cache.get<Result<Data>>(`topRatedAnimes-${excludeIds.join(",")}`)
+  const cached = await kv.get<Result<Data>>(`topRatedAnimes-${excludeIds.join(",")}`)
   if (cached) {
     return cached
   }
@@ -43,13 +43,13 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
     },
   } as Result<Data>
 
-  cache.set(`topRatedAnimes-${excludeIds.join(",")}`, response)
+  kv.set(`topRatedAnimes-${excludeIds.join(",")}`, response)
 
   return response
 }
 
 export const getAnimeById = async (id: string) => {
-  const cached = cache.get<Result<FavoriteItem>>(`animeById-${id}`)
+  const cached = await kv.get<Result<FavoriteItem>>(`animeById-${id}`)
   if (cached) {
     return cached
   }
@@ -88,7 +88,7 @@ export const getAnimeById = async (id: string) => {
         })
     })
 
-  cache.set(`animeById-${id}`, result)
+  kv.set(`animeById-${id}`, result)
 
   return result
 }
@@ -127,7 +127,7 @@ export const searchAnimes = async (search: string, limit = 1): Promise<Result<Da
 }
 
 export const getUserTopRatedAnimes = async (username: string): Promise<Result<Data>> => {
-  const cached = cache.get<Result<Data>>(`userTopRatedAnimes-${username}`)
+  const cached = await kv.get<Result<Data>>(`userTopRatedAnimes-${username}`)
   if (cached) {
     return cached
   }
@@ -203,7 +203,7 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
     },
   } as Result<Data>
 
-  cache.set(`userTopRatedAnimes-${username}`, response)
+  kv.set(`userTopRatedAnimes-${username}`, response)
 
   return response
 }

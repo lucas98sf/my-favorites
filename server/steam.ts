@@ -1,9 +1,9 @@
 "use server"
+import { kv } from "@vercel/kv"
 import ky from "ky"
 import { sortBy } from "lodash"
 
 import { Result } from "@/lib/types"
-import { cache } from "@/server"
 import { searchGames } from "@/server/backloggd"
 import { Data } from "@/server/favorites"
 
@@ -31,7 +31,7 @@ export const getPlayerProfileUrlById = async (id: string): Promise<Result<string
 }
 
 export const getUserTopSteamGames = async (userId: string): Promise<Result<Data>> => {
-  const cached = cache.get<Result<Data>>(`userTopSteamGames-${userId}`)
+  const cached = await kv.get<Result<Data>>(`userTopSteamGames-${userId}`)
   if (cached) {
     return cached
   }
@@ -85,7 +85,7 @@ export const getUserTopSteamGames = async (userId: string): Promise<Result<Data>
     },
   }
 
-  cache.set(`userTopSteamGames-${userId}`, result)
+  kv.set(`userTopSteamGames-${userId}`, result)
 
   return result
 }

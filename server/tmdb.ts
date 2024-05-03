@@ -1,10 +1,11 @@
 "use server"
+import { kv } from "@vercel/kv"
+
 import { Result } from "@/lib/types"
-import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
-  const cached = cache.get<Result<Data>>(`topRatedMovies-${excludeIds.join(",")}`)
+  const cached = await kv.get<Result<Data>>(`topRatedMovies-${excludeIds.join(",")}`)
   if (cached) {
     return cached
   }
@@ -47,13 +48,13 @@ export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: stri
     },
   }
 
-  cache.set(`topRatedMovies-${excludeIds.join(",")}`, result)
+  kv.set(`topRatedMovies-${excludeIds.join(",")}`, result)
 
   return result
 }
 
 export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> => {
-  const cached = cache.get<Result<FavoriteItem>>(`movieById-${id}`)
+  const cached = await kv.get<Result<FavoriteItem>>(`movieById-${id}`)
   if (cached) {
     return cached
   }
@@ -83,7 +84,7 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
       }
     })
 
-  cache.set(`movieById-${id}`, result)
+  kv.set(`movieById-${id}`, result)
 
   return result
 }

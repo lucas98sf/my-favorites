@@ -1,15 +1,15 @@
 "use server"
+import { kv } from "@vercel/kv"
 import igdb from "igdb-api-node"
 import ky from "ky"
 import { take } from "lodash"
 import { parse } from "node-html-parser"
 
 import { Result } from "@/lib/types"
-import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 export const getPopularGames = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
-  const cached = cache.get<Result<Data>>(`popularGames-${excludeIds.join(",")}`)
+  const cached = await kv.get<Result<Data>>(`popularGames-${excludeIds.join(",")}`)
   if (cached) {
     return cached
   }
@@ -32,7 +32,7 @@ export const getPopularGames = async ({ excludeIds = [] }: { excludeIds?: string
     },
   } as Result<Data>
 
-  cache.set(`popularGames-${excludeIds.join(",")}`, result)
+  kv.set(`popularGames-${excludeIds.join(",")}`, result)
 
   return result
 }
@@ -61,7 +61,7 @@ export const searchGames = async (search: string, limit = 1): Promise<Result<Dat
 let igdbClient: ReturnType<typeof igdb> | null = null
 
 export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => {
-  const cached = cache.get<Result<FavoriteItem>>(`gameById-${id}`)
+  const cached = await kv.get<Result<FavoriteItem>>(`gameById-${id}`)
   if (cached) {
     return cached
   }
@@ -97,7 +97,7 @@ export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => 
     },
   }
 
-  cache.set(`gameById-${id}`, result)
+  kv.set(`gameById-${id}`, result)
 
   return result
 }

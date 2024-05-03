@@ -1,8 +1,8 @@
 "use server"
+import { kv } from "@vercel/kv"
 import { parse } from "node-html-parser"
 
 import { Result } from "@/lib/types"
-import { cache } from "@/server"
 
 type LetterboxdFavorite = {
   slug: string
@@ -11,7 +11,7 @@ type LetterboxdFavorite = {
 }
 
 export const getLetterboxdFavorites = async (username: string): Promise<Result<LetterboxdFavorite[]>> => {
-  const cached = cache.get<Result<LetterboxdFavorite[]>>(`letterboxdFavorites-${username}`)
+  const cached = await kv.get<Result<LetterboxdFavorite[]>>(`letterboxdFavorites-${username}`)
   if (cached) {
     return cached
   }
@@ -42,7 +42,7 @@ export const getLetterboxdFavorites = async (username: string): Promise<Result<L
       console.error(error)
     }) as unknown as Promise<Result<any>>
 
-  cache.set(`letterboxdFavorites-${username}`, result)
+  kv.set(`letterboxdFavorites-${username}`, result)
 
   return result
 }

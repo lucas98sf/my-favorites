@@ -1,9 +1,9 @@
 "use server"
+import { kv } from "@vercel/kv"
 import SpotifyWebApi from "spotify-web-api-node"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
-import { cache } from "@/server"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 const spotifyClient = new SpotifyWebApi({
@@ -23,7 +23,7 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
     let result: Result<SpotifyToken> | null = null
 
     if (userId) {
-      const cached = cache.get<Result<SpotifyToken>>(`spotifyToken-${userId}`)
+      const cached = await kv.get<Result<SpotifyToken>>(`spotifyToken-${userId}`)
       if (cached) {
         return cached
       }
@@ -84,12 +84,12 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
           expires_at: data?.expires_at as number,
         },
       }
-      cache.set(`spotifyToken-${userId}`, result)
+      kv.set(`spotifyToken-${userId}`, result)
 
       return result
     }
 
-    const cached = cache.get<Result<SpotifyToken>>("spotifyToken")
+    const cached = await kv.get<Result<SpotifyToken>>("spotifyToken")
     if (cached) {
       return cached
     }
@@ -105,7 +105,7 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
       },
     }
 
-    cache.set("spotifyToken", result)
+    kv.set("spotifyToken", result)
 
     return result
   } catch (error) {
@@ -119,7 +119,7 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
 
 export async function getSpotifyData(userId: string | null = null, limit = 4): Promise<Result<Data>> {
   try {
-    const cached = cache.get<Result<Data>>(`spotifyData-${userId}-${limit}`)
+    const cached = await kv.get<Result<Data>>(`spotifyData-${userId}-${limit}`)
     if (cached) {
       return cached
     }
@@ -150,7 +150,7 @@ export async function getSpotifyData(userId: string | null = null, limit = 4): P
       data: spotifyApiData.data,
     }
 
-    cache.set(`spotifyData-${userId}-${limit}`, result)
+    kv.set(`spotifyData-${userId}-${limit}`, result)
 
     return result
   } catch (error) {
