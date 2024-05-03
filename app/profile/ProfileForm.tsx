@@ -22,7 +22,7 @@ import { Database } from "@/supabase/database.types"
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
 const profileSchema = z.object({
-  username: z.string().url().min(3).optional(),
+  username: z.string().regex(new RegExp("^[a-zA-Z0-9_]*$")).min(3).optional(),
   full_name: z.string().min(3).optional(),
   mal_username: z.string().min(3).optional(),
   letterboxd_username: z.string().min(3).optional(),
@@ -118,7 +118,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   )
 
   return (
-    <Card className="m-auto py-4 p-2 max-h-[80vh]">
+    <Card className="m-auto py-4 p-2 max-h-[85vh]">
       {success && <SuccessAlert message={success} />}
       {error && <ErrorAlert message={error} />}
       <CardHeader className="p-2">

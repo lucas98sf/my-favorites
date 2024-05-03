@@ -152,7 +152,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
   }, [search])
 
   return (
-    <Card className="max-h-[80vh]">
+    <Card className="max-h-[85vh]">
       <CardHeader>{data.type}</CardHeader>
       <CardContent>
         <Label>Search</Label>

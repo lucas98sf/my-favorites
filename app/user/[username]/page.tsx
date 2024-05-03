@@ -1,42 +1,17 @@
 import { concat, take } from "lodash"
 import { redirect } from "next/navigation"
-import { generateSlug } from "random-word-slugs"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getFavorites } from "@/server/favorites"
 import { getProfileData } from "@/server/profiles"
 import { getUserSpotifyData } from "@/server/spotify"
-import { Database } from "@/supabase/database.types"
 
 import Profile from "./Profile"
 
-export default async function UsernamePage({
-  params,
-  searchParams,
-}: {
-  params: { username: string }
-  searchParams: Record<string, string>
-}) {
+export default async function UsernamePage({ params }: { params: { username: string } }) {
   const client = createSupabaseServerClient()
-  if (!params.username && !searchParams.id) {
+  if (!params.username) {
     return
-  }
-
-  if (searchParams.id && !params.username) {
-    const { data, error } = await client
-      .from("profiles")
-      .update({
-        username: generateSlug(),
-      })
-      .eq("user_id", searchParams.id)
-      .returns<Database["public"]["Tables"]["profiles"]["Row"]>()
-
-    if (error) {
-      console.error(error)
-      return
-    }
-
-    redirect(`/user/${data.username}`)
   }
 
   const { data, error } = await client.from("profiles").select("user_id").eq("username", params.username).single()

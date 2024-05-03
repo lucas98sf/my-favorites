@@ -26,19 +26,19 @@ export default async function ProfilePage() {
 
   const profileData = await getUserProfile(user?.id as string)
   if (profileData.status === "error") {
+    console.log(profileData.message)
     return
   }
 
-  let spotifyData = await getUserSpotifyData(user.id, 50)
+  const favoriteTracksData = await getFavorites(user.id, "tracks")
+  const favoriteMoviesData = await getFavorites(user.id, "movies")
+  const favoriteAnimesData = await getFavorites(user.id, "animes")
+  const favoriteGamesData = await getFavorites(user.id, "games")
 
+  let spotifyData = await getUserSpotifyData(user.id, 50)
   if (spotifyData.status === "success" && spotifyData.data.items.length === 0) {
     spotifyData = await getTopTracks()
   }
-
-  const favoriteMoviesData = await getFavorites(user.id, "movies")
-  const favoriteTracksData = await getFavorites(user.id, "tracks")
-  const favoriteAnimesData = await getFavorites(user.id, "animes")
-  const favoriteGamesData = await getFavorites(user.id, "games")
 
   const letterboxdData = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
   let letterboxdFavorites: FavoriteItem[] = []
