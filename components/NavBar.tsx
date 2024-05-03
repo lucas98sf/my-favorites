@@ -1,11 +1,13 @@
 import { HomeIcon } from "@radix-ui/react-icons"
+import { cookies } from "next/headers"
 
 import { ModeToggle } from "@/components/ModeToggle"
 import { Button } from "@/components/ui/button"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export const NavBar = async () => {
-  const supabase = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const supabase = createSupabaseServerClient(cookieStore)
 
   const { data } = await supabase.auth.getUser()
 

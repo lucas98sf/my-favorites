@@ -1,19 +1,14 @@
 "use server"
-import { kv } from "@vercel/kv"
 import ky from "ky"
 import { parse } from "node-html-parser"
+import { cache } from "react"
 
 import { Result } from "@/lib/types"
 import { Data } from "@/server/favorites"
 import { searchMovies } from "@/server/tmdb"
 
-export const getLetterboxdFavorites = async (username: string): Promise<Result<Data>> => {
+export const getLetterboxdFavorites = cache(async (username: string): Promise<Result<Data>> => {
   try {
-    // const cached = await kv.get<Result<LetterboxdFavorite[]>>(`letterboxdFavorites-${username}`)
-    // if (cached) {
-    // return cached
-    // }
-
     if (!username) {
       return {
         status: "success",
@@ -58,8 +53,6 @@ export const getLetterboxdFavorites = async (username: string): Promise<Result<D
       },
     }
 
-    // kv.set(`letterboxdFavorites-${username}`, result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -68,4 +61,4 @@ export const getLetterboxdFavorites = async (username: string): Promise<Result<D
       message: "Could not find Letterboxd data",
     }
   }
-}
+})

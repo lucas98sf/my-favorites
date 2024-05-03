@@ -1,4 +1,5 @@
 import { concat, take } from "lodash"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
@@ -9,7 +10,8 @@ import { getUserSpotifyData } from "@/server/spotify"
 import Profile from "./Profile"
 
 export default async function UsernamePage({ params }: { params: { username: string } }) {
-  const client = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const client = createSupabaseServerClient(cookieStore)
   if (!params.username) {
     return
   }

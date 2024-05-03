@@ -1,7 +1,7 @@
 "use server"
 import { isAuthApiError, isAuthWeakPasswordError } from "@supabase/supabase-js"
 import { revalidatePath } from "next/cache"
-import { headers } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
@@ -10,7 +10,8 @@ import { LoginUser, SignUpUser } from "@/lib/types"
 import { getURL } from "@/lib/utils"
 
 export async function login(formData: LoginUser): Promise<Result> {
-  const supabase = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const supabase = createSupabaseServerClient(cookieStore)
 
   const { error } = await supabase.auth.signInWithPassword({
     email: formData.email,
@@ -31,7 +32,8 @@ export async function login(formData: LoginUser): Promise<Result> {
 }
 
 export async function signUp(formData: SignUpUser): Promise<Result> {
-  const supabase = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const supabase = createSupabaseServerClient(cookieStore)
   const origin = headers().get("origin")
 
   const { error } = await supabase.auth.signUp({
@@ -59,7 +61,8 @@ export async function signUp(formData: SignUpUser): Promise<Result> {
 }
 
 export async function signInWithGoogle(): Promise<Result> {
-  const supabase = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const supabase = createSupabaseServerClient(cookieStore)
   const redirectTo = `${getURL()}auth/callback`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -85,7 +88,8 @@ export async function signInWithGoogle(): Promise<Result> {
 }
 
 export async function signInWithSpotify(): Promise<Result> {
-  const client = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const client = createSupabaseServerClient(cookieStore)
   const redirectTo = `${getURL()}auth/callback`
 
   const { data, error } = await client.auth.signInWithOAuth({

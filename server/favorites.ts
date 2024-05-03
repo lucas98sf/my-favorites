@@ -1,6 +1,8 @@
 "use server"
 import { filter, takeRight } from "lodash"
+import { cookies } from "next/headers"
 import PQueue from "p-queue"
+import { cache } from "react"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
@@ -27,10 +29,11 @@ export type Data = {
   items: FavoriteItem[]
 }
 
-export async function getFavorites(userId: string, type: FavoriteType): Promise<Result<Data>> {
+export const getFavorites = cache(async (userId: string, type: FavoriteType): Promise<Result<Data>> => {
   // console.time(`getFavorites${type}`)
   try {
-    const client = createSupabaseServerClient()
+    const cookieStore = cookies()
+    const client = createSupabaseServerClient(cookieStore)
 
     const { data, error, statusText } = await client.from("favorites").select("*").eq("user_id", userId).single()
 
@@ -118,7 +121,7 @@ export async function getFavorites(userId: string, type: FavoriteType): Promise<
       message: "Could not find favorites",
     }
   }
-}
+})
 
 export async function handleFavorites({
   currentData,
@@ -148,7 +151,8 @@ export async function favoriteItem({
   action: "add" | "remove"
 }): Promise<Result<Favorites["tracks"]>> {
   try {
-    const client = createSupabaseServerClient()
+    const cookieStore = cookies()
+    const client = createSupabaseServerClient(cookieStore)
 
     const { data: currentData } = await client.from("favorites").select("*").eq("user_id", userId).single()
 

@@ -2,17 +2,13 @@
 import { kv } from "@vercel/kv"
 import ky from "ky"
 import { omit } from "lodash"
+import { cache } from "react"
 
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export const getTopRatedAnimes = async (): Promise<Result<Data>> => {
+export const getTopRatedAnimes = cache(async (): Promise<Result<Data>> => {
   try {
-    const cached = await kv.get<Result<Data>>("topRatedAnimes")
-    if (cached) {
-      return cached
-    }
-
     const result = await ky
       .get("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=40", {
         headers: {
@@ -43,8 +39,6 @@ export const getTopRatedAnimes = async (): Promise<Result<Data>> => {
       },
     } as Result<Data>
 
-    kv.set("topRatedAnimes", response)
-
     return response
   } catch (error) {
     console.error(error)
@@ -53,15 +47,10 @@ export const getTopRatedAnimes = async (): Promise<Result<Data>> => {
       message: "Could not find MAL data",
     }
   }
-}
+})
 
-export const getAnimeById = async (id: string): Promise<Result<FavoriteItem>> => {
+export const getAnimeById = cache(async (id: string): Promise<Result<FavoriteItem>> => {
   try {
-    // const cached = await kv.get<Result<FavoriteItem>>(`animeById-${id}`)
-    // if (cached) {
-    // return cached
-    // }
-
     const result: Result<FavoriteItem> = await ky
       .get(`https://api.myanimelist.net/v1/anime/${id}`, {
         headers: {
@@ -96,8 +85,6 @@ export const getAnimeById = async (id: string): Promise<Result<FavoriteItem>> =>
           })
       })
 
-    // kv.set(`animeById-${id}`, result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -106,7 +93,7 @@ export const getAnimeById = async (id: string): Promise<Result<FavoriteItem>> =>
       message: "Could not find MAL data",
     }
   }
-}
+})
 
 export const searchAnimes = async (search: string, limit = 1): Promise<Result<Data>> => {
   try {
@@ -139,13 +126,8 @@ export const searchAnimes = async (search: string, limit = 1): Promise<Result<Da
   }
 }
 
-export const getUserTopRatedAnimes = async (username: string): Promise<Result<Data>> => {
+export const getUserTopRatedAnimes = cache(async (username: string): Promise<Result<Data>> => {
   try {
-    // const cached = await kv.get<Result<Data>>(`userTopRatedAnimes-${username}`)
-    // if (cached) {
-    //   return cached
-    // }
-
     if (!username) {
       return {
         status: "success",
@@ -213,8 +195,6 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
       },
     } as Result<Data>
 
-    // kv.set(`userTopRatedAnimes-${username}`, response)
-
     return response
   } catch (error) {
     console.error(error)
@@ -223,4 +203,4 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
       message: "Could not find MAL data",
     }
   }
-}
+})

@@ -1,10 +1,12 @@
 import { revalidatePath } from "next/cache"
+import { cookies } from "next/headers"
 import { type NextRequest, NextResponse } from "next/server"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export async function POST(req: NextRequest) {
-  const supabase = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const supabase = createSupabaseServerClient(cookieStore)
 
   const {
     data: { user },

@@ -1,8 +1,9 @@
 import { concat, take } from "lodash"
+import { cookies } from "next/headers"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPopularGames } from "@/server/backloggd"
-import { FavoriteItem, getFavorites } from "@/server/favorites"
+import { getFavorites } from "@/server/favorites"
 import { getLetterboxdFavorites } from "@/server/letterboxd"
 import { getTopRatedAnimes, getUserTopRatedAnimes } from "@/server/myanimelist"
 import { getUserProfile } from "@/server/profiles"
@@ -14,7 +15,8 @@ import List from "./List"
 import ProfileForm from "./ProfileForm"
 
 export default async function ProfilePage() {
-  const supabase = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const supabase = createSupabaseServerClient(cookieStore)
 
   const {
     data: { user },
@@ -41,7 +43,7 @@ export default async function ProfilePage() {
   const moviesData = await getTopRatedMovies()
   if (moviesData.status === "success" && letterboxdFavorites.status === "success") {
     moviesData.data.items
-      .filter(movies => !letterboxdFavorites.data.items.some(({ id }) => id === movies.id))
+      .filter(movies => !letterboxdFavorites.data.items?.some(({ id }) => id === movies.id))
       .unshift(...letterboxdFavorites.data.items)
   }
 
@@ -50,7 +52,7 @@ export default async function ProfilePage() {
   const animesData = await getTopRatedAnimes()
   if (malFavorites.status === "success" && animesData.status === "success") {
     animesData.data.items
-      .filter(animes => !malFavorites.data.items.some(({ id }) => id === animes.id))
+      .filter(animes => !malFavorites.data.items?.some(({ id }) => id === animes.id))
       .unshift(...malFavorites.data.items)
   }
 
@@ -59,7 +61,7 @@ export default async function ProfilePage() {
   const gamesData = await getPopularGames()
   if (steamFavorites.status === "success" && gamesData.status === "success") {
     gamesData.data.items
-      .filter(games => !steamFavorites.data.items.some(({ id }) => id === games.id))
+      .filter(games => !steamFavorites.data.items?.some(({ id }) => id === games.id))
       .unshift(...steamFavorites.data.items)
   }
 

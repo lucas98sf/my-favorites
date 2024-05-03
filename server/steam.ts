@@ -2,12 +2,13 @@
 import { kv } from "@vercel/kv"
 import ky from "ky"
 import { sortBy } from "lodash"
+import { cache } from "react"
 
 import { Result } from "@/lib/types"
 import { searchGames } from "@/server/backloggd"
 import { Data } from "@/server/favorites"
 
-export const getPlayerProfileUrlById = async (id: string): Promise<Result<string>> => {
+export const getPlayerProfileUrlById = cache(async (id: string): Promise<Result<string>> => {
   try {
     const url = new URL(`http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/`)
     url.searchParams.append("key", process.env.STEAM_API_KEY as string)
@@ -29,15 +30,10 @@ export const getPlayerProfileUrlById = async (id: string): Promise<Result<string
       message: "Could not find Steam data",
     }
   }
-}
+})
 
-export const getUserTopSteamGames = async (userId: string): Promise<Result<Data>> => {
+export const getUserTopSteamGames = cache(async (userId: string): Promise<Result<Data>> => {
   try {
-    // const cached = await kv.get<Result<Data>>(`userTopSteamGames-${userId}`)
-    // if (cached) {
-    // return cached
-    // }
-
     if (!userId) {
       return {
         status: "success",
@@ -83,8 +79,6 @@ export const getUserTopSteamGames = async (userId: string): Promise<Result<Data>
       },
     }
 
-    // kv.set(`userTopSteamGames-${userId}`, result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -93,4 +87,4 @@ export const getUserTopSteamGames = async (userId: string): Promise<Result<Data>
       message: "Could not find Steam data",
     }
   }
-}
+})

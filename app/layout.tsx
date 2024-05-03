@@ -20,6 +20,8 @@ const sono = Sono({
   fallback: ["sans-serif"],
 })
 
+export const revalidate = 3600
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cn(sono.className, "h-[100%] overflow-hidden")} suppressHydrationWarning>

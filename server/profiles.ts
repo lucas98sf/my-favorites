@@ -1,4 +1,6 @@
 "use server"
+import { cookies } from "next/headers"
+
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { Database } from "@/supabase/database.types"
@@ -6,7 +8,8 @@ import { Database } from "@/supabase/database.types"
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
 export async function getUserProfile(user_id: string): Promise<Result<Partial<Profile> & { spotify_linked: boolean }>> {
-  const client = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const client = createSupabaseServerClient(cookieStore)
   const { data, error, status } = await client.from("profiles").select("*").eq("user_id", user_id).single()
   const { data: spotifyData } = await client.from("spotify_data").select("expires_at").eq("user_id", user_id).single()
 
@@ -31,7 +34,8 @@ export async function getUserProfile(user_id: string): Promise<Result<Partial<Pr
 }
 
 export async function updateUserProfile(data: Partial<Profile & { user_id: string }>): Promise<Result> {
-  const client = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const client = createSupabaseServerClient(cookieStore)
   const { error, statusText } = await client.from("profiles").upsert(
     {
       ...data,
@@ -72,7 +76,8 @@ export type ProfileData = {
 
 export async function getProfileData(userId: string): Promise<Result<ProfileData>> {
   try {
-    const client = createSupabaseServerClient()
+    const cookieStore = cookies()
+    const client = createSupabaseServerClient(cookieStore)
 
     const { data, error, statusText } = await client
       .from("profiles")

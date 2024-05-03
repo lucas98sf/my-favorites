@@ -1,17 +1,13 @@
 "use server"
 import { kv } from "@vercel/kv"
 import ky from "ky"
+import { cache } from "react"
 
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export const getTopRatedMovies = async (): Promise<Result<Data>> => {
+export const getTopRatedMovies = cache(async (): Promise<Result<Data>> => {
   try {
-    const cached = await kv.get<Result<Data>>("topRatedMovies")
-    if (cached) {
-      return cached
-    }
-
     const requestTMDBApi = async (page = 1) => {
       return ky
         .get(`https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=${page}`, {
@@ -43,8 +39,6 @@ export const getTopRatedMovies = async (): Promise<Result<Data>> => {
       },
     }
 
-    kv.set("topRatedMovies", result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -53,15 +47,10 @@ export const getTopRatedMovies = async (): Promise<Result<Data>> => {
       message: "Could not find TMDB data",
     }
   }
-}
+})
 
-export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> => {
+export const getMovieById = cache(async (id: string): Promise<Result<FavoriteItem>> => {
   try {
-    // const cached = await kv.get<Result<FavoriteItem>>(`movieById-${id}`)
-    // if (cached) {
-    //   return cached
-    // }
-
     const result: Result<FavoriteItem> = await ky
       .get(`https://api.themoviedb.org/3/movie/${id}`, {
         headers: {
@@ -81,8 +70,6 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
           }) as Result<FavoriteItem>
       )
 
-    // kv.set(`movieById-${id}`, result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -91,7 +78,7 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
       message: "Could not find TMDB data",
     }
   }
-}
+})
 
 // unfortunately, the TMDB API does not support searching by letterboxd film id
 export const searchMovies = async (search: string, limit = 1): Promise<Result<Data>> => {

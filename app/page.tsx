@@ -1,3 +1,4 @@
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
@@ -9,7 +10,8 @@ export default async function IndexPage({ searchParams }: { searchParams: Record
     redirect(`/auth/callback?code=${code}`)
   }
 
-  const client = createSupabaseServerClient()
+  const cookieStore = cookies()
+  const client = createSupabaseServerClient(cookieStore)
 
   const {
     data: { user },

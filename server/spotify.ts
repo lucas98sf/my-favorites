@@ -1,16 +1,21 @@
 "use server"
 import { kv } from "@vercel/kv"
 import ky from "ky"
+import { cookies } from "next/headers"
+import { cache } from "react"
 import SpotifyWebApi from "spotify-web-api-node"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-const spotifyClient = new SpotifyWebApi({
-  clientId: process.env.SPOTIFY_CLIENT_ID,
-  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-})
+const spotifyClient = cache(
+  () =>
+    new SpotifyWebApi({
+      clientId: process.env.SPOTIFY_CLIENT_ID,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    })
+)
 
 type SpotifyToken = {
   access_token: string
@@ -18,17 +23,13 @@ type SpotifyToken = {
   expires_at: number
 }
 
-export async function getSpotifyToken(userId: string | null = null): Promise<Result<SpotifyToken>> {
+export const getSpotifyToken = cache(async (userId: string | null = null): Promise<Result<SpotifyToken>> => {
   try {
-    const client = createSupabaseServerClient()
+    const cookieStore = cookies()
+    const client = createSupabaseServerClient(cookieStore)
     let result: Result<SpotifyToken> | null = null
 
     if (userId) {
-      // const cached = await kv.get<Result<SpotifyToken>>(`spotifyToken-${userId}`)
-      // if (cached) {
-      //   return cached
-      // }
-
       const { data, error } = await client
         .from("spotify_data")
         .select("access_token, refresh_token, expires_at")
@@ -63,12 +64,11 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
           },
         }
 
-        // kv.set(`spotifyToken-${userId}`, result)
         return result
       }
 
       if (error) {
-        const data = await spotifyClient.clientCredentialsGrant()
+        const data = await spotifyClient().clientCredentialsGrant()
 
         result = {
           status: "success",
@@ -79,7 +79,6 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
           },
         }
 
-        // kv.set(`spotifyToken-${userId}`, result)
         return result
       }
 
@@ -93,17 +92,11 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
           },
         }
 
-        // kv.set(`spotifyToken-${userId}`, result)
         return result
       }
     }
 
-    const cached = await kv.get<Result<SpotifyToken>>("spotifyToken")
-    if (cached) {
-      return cached
-    }
-
-    const data = await spotifyClient.clientCredentialsGrant()
+    const data = await spotifyClient().clientCredentialsGrant()
 
     result = {
       status: "success",
@@ -114,8 +107,6 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
       },
     }
 
-    kv.set("spotifyToken", result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -124,15 +115,10 @@ export async function getSpotifyToken(userId: string | null = null): Promise<Res
       message: "There was an error getting your spotify token",
     }
   }
-}
+})
 
-export async function getUserSpotifyData(userId: string | null = null, limit = 4): Promise<Result<Data>> {
+export const getUserSpotifyData = cache(async (userId: string | null = null, limit = 4): Promise<Result<Data>> => {
   try {
-    // const cached = await kv.get<Result<Data>>(`spotifyData-${userId}-${limit}`)
-    // if (cached) {
-    //   return cached
-    // }
-
     const spotifyToken = await getSpotifyToken(userId)
 
     if (spotifyToken.status === "error") {
@@ -159,8 +145,6 @@ export async function getUserSpotifyData(userId: string | null = null, limit = 4
       data: spotifyApiData.data,
     }
 
-    // kv.set(`spotifyData-${userId}-${limit}`, result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -169,15 +153,10 @@ export async function getUserSpotifyData(userId: string | null = null, limit = 4
       message: "Could not find Spotify data",
     }
   }
-}
+})
 
-export async function getTopTracks(): Promise<Result<Data>> {
+export const getTopTracks = cache(async (): Promise<Result<Data>> => {
   try {
-    const cached = await kv.get<Result<Data>>("topTracks")
-    if (cached) {
-      return cached
-    }
-
     const spotifyToken = await getSpotifyToken()
 
     if (spotifyToken.status === "error") {
@@ -210,8 +189,6 @@ export async function getTopTracks(): Promise<Result<Data>> {
         } as Result<Data>
       })
 
-    kv.set("topTracks", result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -220,7 +197,7 @@ export async function getTopTracks(): Promise<Result<Data>> {
       message: "Could not find Spotify data",
     }
   }
-}
+})
 
 export async function getUserTopTracks({
   spotifyToken,
@@ -261,41 +238,37 @@ export async function getUserTopTracks({
   }
 }
 
-export async function getTrackById({
-  spotifyToken,
-  id,
-}: {
-  spotifyToken: string
-  id: string
-}): Promise<Result<FavoriteItem>> {
-  try {
-    return ky
-      .get(`https://api.spotify.com/v1/tracks/${id}`, {
-        headers: {
-          Authorization: `Bearer ${spotifyToken}`,
-        },
-      })
-      .json<any>()
-      .then(
-        data =>
-          ({
-            status: "success",
-            data: {
-              id: data.id,
-              title: data.name,
-              description: data.artists?.[0]?.name,
-              image: data.album?.images?.[0]?.url,
-            },
-          }) as Result<FavoriteItem>
-      )
-  } catch (error) {
-    console.error(error)
-    return {
-      status: "error",
-      message: "Could not find Spotify data",
+export const getTrackById = cache(
+  async ({ spotifyToken, id }: { spotifyToken: string; id: string }): Promise<Result<FavoriteItem>> => {
+    try {
+      return ky
+        .get(`https://api.spotify.com/v1/tracks/${id}`, {
+          headers: {
+            Authorization: `Bearer ${spotifyToken}`,
+          },
+        })
+        .json<any>()
+        .then(
+          data =>
+            ({
+              status: "success",
+              data: {
+                id: data.id,
+                title: data.name,
+                description: data.artists?.[0]?.name,
+                image: data.album?.images?.[0]?.url,
+              },
+            }) as Result<FavoriteItem>
+        )
+    } catch (error) {
+      console.error(error)
+      return {
+        status: "error",
+        message: "Could not find Spotify data",
+      }
     }
   }
-}
+)
 
 export const searchTrack = async ({
   spotifyToken,

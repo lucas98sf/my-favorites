@@ -4,17 +4,13 @@ import igdb from "igdb-api-node"
 import ky from "ky"
 import { take } from "lodash"
 import { parse } from "node-html-parser"
+import { cache } from "react"
 
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export const getPopularGames = async (): Promise<Result<Data>> => {
+export const getPopularGames = cache(async (): Promise<Result<Data>> => {
   try {
-    const cached = await kv.get<Result<Data>>("popularGames")
-    if (cached) {
-      return cached
-    }
-
     const popularGames = await (await ky.get("https://www.backloggd.com/games/lib/popular/")).text()
     const games = parse(popularGames)
       .querySelectorAll(".card-img")
@@ -32,8 +28,6 @@ export const getPopularGames = async (): Promise<Result<Data>> => {
       },
     } as Result<Data>
 
-    kv.set("popularGames", result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -42,7 +36,7 @@ export const getPopularGames = async (): Promise<Result<Data>> => {
       message: "Could not find Backloggd data",
     }
   }
-}
+})
 
 export const searchGames = async (search: string, limit = 1): Promise<Result<Data>> => {
   try {
@@ -73,13 +67,8 @@ export const searchGames = async (search: string, limit = 1): Promise<Result<Dat
   }
 }
 
-export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => {
+export const getGameById = cache(async (id: string): Promise<Result<FavoriteItem>> => {
   try {
-    // const cached = await kv.get<Result<FavoriteItem>>(`gameById-${id}`)
-    // if (cached) {
-    // return cached
-    // }
-
     // const formData = new FormData()
     // formData.append("client_id", process.env.TWITCH_CLIENT_ID!)
     // formData.append("client_secret", process.env.TWITCH_CLIENT_SECRET!)
@@ -109,8 +98,6 @@ export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => 
       },
     }
 
-    // kv.set(`gameById-${id}`, result)
-
     return result
   } catch (error) {
     console.error(error)
@@ -119,4 +106,4 @@ export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => 
       message: "Could not find IGDB data",
     }
   }
-}
+})
