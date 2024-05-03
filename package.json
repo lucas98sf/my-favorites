@@ -20,6 +20,7 @@
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.42.5",
     "@vercel/kv": "^1.0.1",
+    "@vercel/speed-insights": "^1.0.10",
     "autoprefixer": "10.4.17",
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
