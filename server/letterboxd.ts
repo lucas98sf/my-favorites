@@ -3,26 +3,26 @@ import { kv } from "@vercel/kv"
 import { parse } from "node-html-parser"
 
 import { Result } from "@/lib/types"
+import { Data } from "@/server/favorites"
+import { searchMovies } from "@/server/tmdb"
 
-type LetterboxdFavorite = {
-  slug: string
-  name: string
-  image: string
-}
-
-export const getLetterboxdFavorites = async (username: string): Promise<Result<LetterboxdFavorite[]>> => {
-  const cached = await kv.get<Result<LetterboxdFavorite[]>>(`letterboxdFavorites-${username}`)
-  if (cached) {
-    return cached
-  }
+export const getLetterboxdFavorites = async (username: string): Promise<Result<Data>> => {
+  // const cached = await kv.get<Result<LetterboxdFavorite[]>>(`letterboxdFavorites-${username}`)
+  // if (cached) {
+  // return cached
+  // }
 
   if (!username) {
     return {
-      status: "error",
-      message: "No username provided",
+      status: "success",
+      data: {
+        type: "movies",
+        items: [],
+      },
     }
   }
-  const result = fetch(`https://letterboxd.com/${username}`)
+
+  const movies = await fetch(`https://letterboxd.com/${username}`)
     .then(res =>
       res.text().then(data => {
         const root = parse(data)
@@ -32,17 +32,34 @@ export const getLetterboxdFavorites = async (username: string): Promise<Result<L
           image: elem.querySelector("img")?.attrs["src"],
           name: elem.querySelector("img")?.attrs["alt"],
         }))
-        return {
-          status: "success",
-          data: result,
-        }
+        return result
       })
     )
     .catch(error => {
       console.error(error)
-    }) as unknown as Promise<Result<any>>
+    })
 
-  kv.set(`letterboxdFavorites-${username}`, result)
+  if (!movies) {
+    return {
+      status: "success",
+      data: {
+        type: "movies",
+        items: [],
+      },
+    }
+  }
+
+  const result: Result<Data> = {
+    status: "success",
+    data: {
+      type: "movies",
+      items: (await Promise.all(movies.map(movie => searchMovies(movie.slug)) ?? [])).flatMap(movie =>
+        movie.status === "success" ? [movie.data.items[0]] : []
+      ),
+    },
+  }
+
+  // kv.set(`letterboxdFavorites-${username}`, result)
 
   return result
 }

@@ -8,8 +8,8 @@ import { parse } from "node-html-parser"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export const getPopularGames = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
-  const cached = await kv.get<Result<Data>>(`popularGames-${excludeIds.join(",")}`)
+export const getPopularGames = async (): Promise<Result<Data>> => {
+  const cached = await kv.get<Result<Data>>("popularGames")
   if (cached) {
     return cached
   }
@@ -22,7 +22,6 @@ export const getPopularGames = async ({ excludeIds = [] }: { excludeIds?: string
       title: game.getAttribute("alt") as string,
       image: game.getAttribute("src") as string,
     }))
-    .filter((res: any) => !excludeIds.includes(res.id))
 
   const result = {
     status: "success",
@@ -32,7 +31,7 @@ export const getPopularGames = async ({ excludeIds = [] }: { excludeIds?: string
     },
   } as Result<Data>
 
-  kv.set(`popularGames-${excludeIds.join(",")}`, result)
+  kv.set("popularGames", result)
 
   return result
 }
@@ -61,20 +60,24 @@ export const searchGames = async (search: string, limit = 1): Promise<Result<Dat
 let igdbClient: ReturnType<typeof igdb> | null = null
 
 export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => {
-  const cached = await kv.get<Result<FavoriteItem>>(`gameById-${id}`)
-  if (cached) {
-    return cached
-  }
+  // const cached = await kv.get<Result<FavoriteItem>>(`gameById-${id}`)
+  // if (cached) {
+  // return cached
+  // }
 
   if (!igdbClient) {
-    const formData = new FormData()
-    formData.append("client_id", process.env.TWITCH_CLIENT_ID!)
-    formData.append("client_secret", process.env.TWITCH_CLIENT_SECRET!)
-    formData.append("grant_type", "client_credentials")
-    const accessToken = await ky
-      .post("https://id.twitch.tv/oauth2/token", { body: formData })
-      .then(res => res.json<any>())
-      .then(res => res.access_token)
+    let accessToken = await kv.get<string>("twitchAccessToken")
+    if (!accessToken) {
+      const formData = new FormData()
+      formData.append("client_id", process.env.TWITCH_CLIENT_ID!)
+      formData.append("client_secret", process.env.TWITCH_CLIENT_SECRET!)
+      formData.append("grant_type", "client_credentials")
+      accessToken = await ky
+        .post("https://id.twitch.tv/oauth2/token", { body: formData })
+        .then(res => res.json<any>())
+        .then(res => res.access_token)
+      if (accessToken) kv.set("twitchAccessToken", accessToken)
+    }
 
     igdbClient = igdb(process.env.IGDB_CLIENT_ID, accessToken as string)
   }
@@ -97,7 +100,7 @@ export const getGameById = async (id: string): Promise<Result<FavoriteItem>> => 
     },
   }
 
-  kv.set(`gameById-${id}`, result)
+  // kv.set(`gameById-${id}`, result)
 
   return result
 }

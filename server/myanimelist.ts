@@ -6,8 +6,8 @@ import { omit } from "lodash"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
-  const cached = await kv.get<Result<Data>>(`topRatedAnimes-${excludeIds.join(",")}`)
+export const getTopRatedAnimes = async (): Promise<Result<Data>> => {
+  const cached = await kv.get<Result<Data>>("topRatedAnimes")
   if (cached) {
     return cached
   }
@@ -18,13 +18,11 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
     },
   }).then(res =>
     res.json().then(data => {
-      return data.data
-        ?.map(({ node }: any) => ({
-          id: String(node.id),
-          title: node.title,
-          image: node.main_picture?.medium,
-        }))
-        ?.filter((res: any) => !excludeIds.includes(res.id))
+      return data.data?.map(({ node }: any) => ({
+        id: String(node.id),
+        title: node.title,
+        image: node.main_picture?.medium,
+      }))
     })
   )
 
@@ -43,16 +41,16 @@ export const getTopRatedAnimes = async ({ excludeIds = [] }: { excludeIds?: stri
     },
   } as Result<Data>
 
-  kv.set(`topRatedAnimes-${excludeIds.join(",")}`, response)
+  kv.set("topRatedAnimes", response)
 
   return response
 }
 
 export const getAnimeById = async (id: string) => {
-  const cached = await kv.get<Result<FavoriteItem>>(`animeById-${id}`)
-  if (cached) {
-    return cached
-  }
+  // const cached = await kv.get<Result<FavoriteItem>>(`animeById-${id}`)
+  // if (cached) {
+  // return cached
+  // }
 
   const result = await ky
     .get(`https://api.myanimelist.net/v1/anime/${id}`, {
@@ -88,7 +86,7 @@ export const getAnimeById = async (id: string) => {
         })
     })
 
-  kv.set(`animeById-${id}`, result)
+  // kv.set(`animeById-${id}`, result)
 
   return result
 }
@@ -124,15 +122,18 @@ export const searchAnimes = async (search: string, limit = 1): Promise<Result<Da
 }
 
 export const getUserTopRatedAnimes = async (username: string): Promise<Result<Data>> => {
-  const cached = await kv.get<Result<Data>>(`userTopRatedAnimes-${username}`)
-  if (cached) {
-    return cached
-  }
+  // const cached = await kv.get<Result<Data>>(`userTopRatedAnimes-${username}`)
+  // if (cached) {
+  //   return cached
+  // }
 
   if (!username) {
     return {
-      status: "error",
-      message: "No username provided",
+      status: "success",
+      data: {
+        type: "animes",
+        items: [],
+      },
     }
   }
   const getPage = (offset = 0) =>
@@ -200,7 +201,7 @@ export const getUserTopRatedAnimes = async (username: string): Promise<Result<Da
     },
   } as Result<Data>
 
-  kv.set(`userTopRatedAnimes-${username}`, response)
+  // kv.set(`userTopRatedAnimes-${username}`, response)
 
   return response
 }

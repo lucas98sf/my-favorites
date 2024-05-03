@@ -4,8 +4,8 @@ import { kv } from "@vercel/kv"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
-export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: string[] } = {}): Promise<Result<Data>> => {
-  const cached = await kv.get<Result<Data>>(`topRatedMovies-${excludeIds.join(",")}`)
+export const getTopRatedMovies = async (): Promise<Result<Data>> => {
+  const cached = await kv.get<Result<Data>>("topRatedMovies")
   if (cached) {
     return cached
   }
@@ -17,13 +17,11 @@ export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: stri
       },
     }).then(res =>
       res.json().then(data => {
-        return data.results
-          ?.map((res: any) => ({
-            id: String(res.id),
-            title: res.title,
-            image: `https://image.tmdb.org/t/p/w200${res.poster_path}`,
-          }))
-          ?.filter((res: any) => !excludeIds.includes(res.id))
+        return data.results?.map((res: any) => ({
+          id: String(res.id),
+          title: res.title,
+          image: `https://image.tmdb.org/t/p/w200${res.poster_path}`,
+        }))
       })
     )
   }
@@ -48,16 +46,17 @@ export const getTopRatedMovies = async ({ excludeIds = [] }: { excludeIds?: stri
     },
   }
 
-  kv.set(`topRatedMovies-${excludeIds.join(",")}`, result)
+  kv.set("topRatedMovies", result)
 
   return result
 }
 
 export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> => {
-  const cached = await kv.get<Result<FavoriteItem>>(`movieById-${id}`)
-  if (cached) {
-    return cached
-  }
+  // const cached = await kv.get<Result<FavoriteItem>>(`movieById-${id}`)
+  // if (cached) {
+  //   return cached
+  // }
+
   const result: Result<FavoriteItem> = await fetch(`https://api.themoviedb.org/3/movie/${id}`, {
     headers: {
       Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
@@ -84,7 +83,7 @@ export const getMovieById = async (id: string): Promise<Result<FavoriteItem>> =>
       }
     })
 
-  kv.set(`movieById-${id}`, result)
+  // kv.set(`movieById-${id}`, result)
 
   return result
 }

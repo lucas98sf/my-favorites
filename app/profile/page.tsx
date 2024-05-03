@@ -31,41 +31,36 @@ export default async function ProfilePage() {
   }
 
   const favoriteTracksData = await getFavorites(user.id, "tracks")
-  const favoriteMoviesData = await getFavorites(user.id, "movies")
-  const favoriteAnimesData = await getFavorites(user.id, "animes")
-  const favoriteGamesData = await getFavorites(user.id, "games")
-
   let spotifyData = await getUserSpotifyData(user.id, 50)
   if (spotifyData.status === "success" && spotifyData.data.items.length === 0) {
     spotifyData = await getTopTracks()
   }
 
-  const letterboxdData = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
-  let letterboxdFavorites: FavoriteItem[] = []
-  if (letterboxdData.status === "success") {
-    letterboxdFavorites = (await Promise.all(letterboxdData.data?.map(item => searchMovies(item.slug)) ?? [])).flatMap(
-      movie => (movie.status === "success" ? [movie.data.items[0]] : [])
-    )
-  }
-  const moviesData = await getTopRatedMovies({ excludeIds: letterboxdFavorites.map(({ id }) => id) })
-  if (moviesData.status === "success" && letterboxdFavorites.length > 0) {
-    moviesData.data.items.unshift(...letterboxdFavorites)
+  const favoriteMoviesData = await getFavorites(user.id, "movies")
+  const letterboxdFavorites = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
+  const moviesData = await getTopRatedMovies()
+  if (moviesData.status === "success" && letterboxdFavorites.status === "success") {
+    moviesData.data.items
+      .filter(movies => !letterboxdFavorites.data.items.some(({ id }) => id === movies.id))
+      .unshift(...letterboxdFavorites.data.items)
   }
 
+  const favoriteAnimesData = await getFavorites(user.id, "animes")
   const malFavorites = await getUserTopRatedAnimes(profileData.data.mal_username as string)
-  const animesData = await getTopRatedAnimes({
-    excludeIds: favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items.map(({ id }) => id) : [],
-  })
+  const animesData = await getTopRatedAnimes()
   if (malFavorites.status === "success" && animesData.status === "success") {
-    animesData.data.items.unshift(...malFavorites.data.items)
+    animesData.data.items
+      .filter(animes => !malFavorites.data.items.some(({ id }) => id === animes.id))
+      .unshift(...malFavorites.data.items)
   }
 
+  const favoriteGamesData = await getFavorites(user.id, "games")
   const steamFavorites = await getUserTopSteamGames(profileData.data.steam_id as string)
-  const gamesData = await getPopularGames({
-    excludeIds: favoriteGamesData.status === "success" ? favoriteGamesData.data.items.map(({ id }) => id) : [],
-  })
+  const gamesData = await getPopularGames()
   if (steamFavorites.status === "success" && gamesData.status === "success") {
-    gamesData.data.items.unshift(...steamFavorites.data.items)
+    gamesData.data.items
+      .filter(games => !steamFavorites.data.items.some(({ id }) => id === games.id))
+      .unshift(...steamFavorites.data.items)
   }
 
   return (

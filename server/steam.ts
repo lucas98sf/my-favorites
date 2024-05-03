@@ -31,15 +31,18 @@ export const getPlayerProfileUrlById = async (id: string): Promise<Result<string
 }
 
 export const getUserTopSteamGames = async (userId: string): Promise<Result<Data>> => {
-  const cached = await kv.get<Result<Data>>(`userTopSteamGames-${userId}`)
-  if (cached) {
-    return cached
-  }
+  // const cached = await kv.get<Result<Data>>(`userTopSteamGames-${userId}`)
+  // if (cached) {
+  // return cached
+  // }
 
   if (!userId) {
     return {
-      status: "error",
-      message: "Steam ID is required",
+      status: "success",
+      data: {
+        type: "games",
+        items: [],
+      },
     }
   }
 
@@ -85,7 +88,7 @@ export const getUserTopSteamGames = async (userId: string): Promise<Result<Data>
     },
   }
 
-  kv.set(`userTopSteamGames-${userId}`, result)
+  // kv.set(`userTopSteamGames-${userId}`, result)
 
   return result
 }
