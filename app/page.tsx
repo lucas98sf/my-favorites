@@ -20,6 +20,8 @@ export default async function IndexPage({ searchParams }: { searchParams: Record
 
     if (data?.username) {
       redirect(`/user/${data.username}`)
+    } else {
+      redirect(`/user/?id=${user.id}`)
     }
   }
 

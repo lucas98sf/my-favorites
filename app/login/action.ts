@@ -92,7 +92,7 @@ export async function signInWithSpotify(): Promise<Result> {
     provider: "spotify",
     options: {
       redirectTo,
-      scopes: "user-read-email user-read-private user-top-read",
+      scopes: "user-read-email user-top-read",
       queryParams: {
         grant_type: "authorization_code",
       },

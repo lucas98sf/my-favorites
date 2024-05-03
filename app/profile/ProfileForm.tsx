@@ -22,7 +22,7 @@ import { Database } from "@/supabase/database.types"
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
 const profileSchema = z.object({
-  username: z.string().min(3).optional(),
+  username: z.string().url().min(3).optional(),
   full_name: z.string().min(3).optional(),
   mal_username: z.string().min(3).optional(),
   letterboxd_username: z.string().min(3).optional(),
