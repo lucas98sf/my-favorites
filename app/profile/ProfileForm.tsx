@@ -118,7 +118,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
   )
 
   return (
-    <Card className="m-auto py-4 p-2 max-h-[90vh]">
+    <Card className="m-auto py-4 p-2">
       {success && <SuccessAlert message={success} />}
       {error && <ErrorAlert message={error} />}
       <CardHeader className="p-2">

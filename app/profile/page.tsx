@@ -66,7 +66,7 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-6">
+    <div className="flex flex-col xl:flex-row gap-6">
       <ProfileForm
         spotifyLinked={profileData.data.spotify_linked}
         user={{

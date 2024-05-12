@@ -32,7 +32,7 @@ export const NavBar = async () => {
           </div>
         )}
       </div>
-      <div className="flex flex-row gap-3 m-auto text-xs sm:text-xl">My Favorites</div>
+      <div className="flex flex-row gap-3 m-auto text-xs xl:text-xl">My Favorites</div>
       <div className="flex flex-row-reverse gap-3 m-3">
         {data?.user ? (
           <form action="/auth/signout" method="post">
