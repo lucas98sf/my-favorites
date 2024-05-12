@@ -1,10 +1,15 @@
 import { truncate } from "lodash"
 import Image from "next/image"
+import Link from "next/link"
 import { type FC } from "react"
 
+import LetterboxdIcon from "@/components/icons/LetterboxdIcon"
+import MyanimelistIcon from "@/components/icons/MyanimelistIcon"
+import SpotifyIcon from "@/components/icons/SpotifyIcon"
+import SteamIcon from "@/components/icons/SteamIcon"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
-import { Data, FavoriteType } from "@/server/favorites"
+import { Data } from "@/server/favorites"
 import { ProfileData } from "@/server/profiles"
 
 const Profile: FC<{
@@ -17,18 +22,42 @@ const Profile: FC<{
   return (
     <Card className="m-auto py-10 p-8 mx-24">
       <div className="tracks flex flex-col gap-2">
-        <div className="flex flex-row gap-4 h-[20%]">
-          <Avatar className="size-32">
-            <AvatarImage src={profileData.avatar_url} alt={profileData.username} />
-            <AvatarFallback>
-              {profileData.full_name
-                ? profileData.full_name.split(" ").map(s => s[0].toUpperCase())
-                : profileData.username[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col my-auto">
-            <h1 className="text-3xl font-bold">{profileData.username}</h1>
-            <span className="mb-6">{profileData.full_name}</span>
+        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-2 gap-4 h-[20%]">
+          <div className="flex flex-row gap-3">
+            <Avatar className="size-32">
+              <AvatarImage src={profileData.avatar_url} alt={profileData.username} />
+              <AvatarFallback>
+                {profileData.full_name
+                  ? profileData.full_name.split(" ").map(s => s[0].toUpperCase())
+                  : profileData.username[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col my-auto">
+              <h1 className="text-3xl font-bold">{profileData.username}</h1>
+              <span className="mb-6">{profileData.full_name}</span>
+            </div>
+          </div>
+          <div className="flex flex-row gap-4">
+            {profileData.spotifyId && (
+              <Link href={`https://open.spotify.com/user/${profileData.spotifyId}`} target="_blank">
+                <SpotifyIcon />
+              </Link>
+            )}
+            {profileData.steamUrl && (
+              <Link href={profileData.steamUrl} target="_blank">
+                <SteamIcon />
+              </Link>
+            )}
+            {profileData.letterboxdUsername && (
+              <Link href={`https://letterboxd.com/${profileData.letterboxdUsername}/`} target="_blank">
+                <LetterboxdIcon />
+              </Link>
+            )}
+            {profileData.myAnimeListUsername && (
+              <Link href={`https://myanimelist.net/profile/${profileData.myAnimeListUsername}/`} target="_blank">
+                <MyanimelistIcon />
+              </Link>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-6 mt-4 sm:flex-row">

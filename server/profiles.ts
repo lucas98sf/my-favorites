@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
+import { getPlayerProfileUrlById } from "@/server/steam"
 import { Database } from "@/supabase/database.types"
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
@@ -72,6 +73,10 @@ export type ProfileData = {
   avatar_url: string
   username: string
   full_name: string | null
+  spotifyId: string | null
+  steamUrl: string | null
+  letterboxdUsername: string | null
+  myAnimeListUsername: string | null
 }
 
 export async function getProfileData(userId: string): Promise<Result<ProfileData>> {
@@ -81,7 +86,7 @@ export async function getProfileData(userId: string): Promise<Result<ProfileData
 
     const { data, error, statusText } = await client
       .from("profiles")
-      .select("username, full_name, avatar_url")
+      .select("username, full_name, avatar_url, steam_id, letterboxd_username, mal_username, spotify_id")
       .eq("user_id", userId)
       .single()
 
@@ -93,12 +98,18 @@ export async function getProfileData(userId: string): Promise<Result<ProfileData
       }
     }
 
+    const steamId = await getPlayerProfileUrlById(data?.steam_id as string)
+
     return {
       status: "success",
       data: {
         avatar_url: data?.avatar_url as string,
         username: data?.username as string,
         full_name: data?.full_name,
+        spotifyId: data?.spotify_id as string,
+        steamUrl: steamId.status === "success" ? steamId.data : null,
+        letterboxdUsername: data?.letterboxd_username as string,
+        myAnimeListUsername: data?.mal_username as string,
       },
     }
   } catch (error: any) {

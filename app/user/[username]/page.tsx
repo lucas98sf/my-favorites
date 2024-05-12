@@ -5,7 +5,6 @@ import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getFavorites } from "@/server/favorites"
 import { getProfileData } from "@/server/profiles"
-import { getUserSpotifyData } from "@/server/spotify"
 
 import Profile from "./Profile"
 

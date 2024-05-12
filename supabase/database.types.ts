@@ -45,6 +45,7 @@ export type Database = {
           full_name: string | null
           letterboxd_username: string | null
           mal_username: string | null
+          spotify_id: string | null
           steam_id: string | null
           user_id: string
           username: string | null
@@ -55,6 +56,7 @@ export type Database = {
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
+          spotify_id?: string | null
           steam_id?: string | null
           user_id?: string
           username?: string | null
@@ -65,6 +67,7 @@ export type Database = {
           full_name?: string | null
           letterboxd_username?: string | null
           mal_username?: string | null
+          spotify_id?: string | null
           steam_id?: string | null
           user_id?: string
           username?: string | null

@@ -198,11 +198,11 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
               </div>
               <FormField
                 control={profileForm.control}
-                name="mal_username"
+                name="letterboxd_username"
                 disabled={updating}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>My Anime List username</FormLabel>
+                    <FormLabel>Letterboxd username</FormLabel>
                     <FormControl>
                       <Input type="text" {...field} />
                     </FormControl>
@@ -212,11 +212,11 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
               />
               <FormField
                 control={profileForm.control}
-                name="letterboxd_username"
+                name="mal_username"
                 disabled={updating}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Letterboxd username</FormLabel>
+                    <FormLabel>My Anime List username</FormLabel>
                     <FormControl>
                       <Input type="text" {...field} />
                     </FormControl>
