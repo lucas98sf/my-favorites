@@ -1,4 +1,4 @@
-import { HomeIcon } from "@radix-ui/react-icons"
+import { HomeIcon, PersonIcon } from "@radix-ui/react-icons"
 import { cookies } from "next/headers"
 
 import { ModeToggle } from "@/components/ModeToggle"
@@ -16,20 +16,23 @@ export const NavBar = async () => {
       <div className="flex flex-row gap-3 m-3">
         <form action="/" method="get">
           <Button type="submit" variant="ghost">
-            <HomeIcon className="h-4 w-4" />
+            <HomeIcon className="h-6 w-6" />
           </Button>
         </form>
         {data?.user && (
           <div className="text-ellipsis">
             <form action="/profile" method="get">
-              <Button type="submit" variant="link">
+              <Button className="hidden sm:block" type="submit" variant="link">
                 {data.user?.email || ""}
+              </Button>
+              <Button className="sm:hidden" type="submit" variant="link">
+                <PersonIcon className="h-6 w-6" />
               </Button>
             </form>
           </div>
         )}
       </div>
-      <div className="flex flex-row gap-3 m-auto text-xl">my favorites</div>
+      <div className="flex flex-row gap-3 m-auto text-xs sm:text-xl">My Favorites</div>
       <div className="flex flex-row-reverse gap-3 m-3">
         {data?.user ? (
           <form action="/auth/signout" method="post">

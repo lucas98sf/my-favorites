@@ -24,8 +24,8 @@ export const revalidate = 3600
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn(sono.className, "h-[100%] overflow-hidden")} suppressHydrationWarning>
-      <body className="bg-background text-foreground h-[100%] overflow-hidden">
+    <html lang="en" className={cn(sono.className, "h-[100%] sm:overflow-hidden")} suppressHydrationWarning>
+      <body className="bg-background text-foreground h-[100%] sm:overflow-hidden">
         <ThemeProvider
           themes={["light", "dark"]}
           attribute="class"
