@@ -33,7 +33,7 @@ export default async function ProfilePage() {
   }
 
   const favoriteTracksData = await getFavorites(user.id, "tracks")
-  let spotifyData = await getUserSpotifyData(user.id, 50)
+  let spotifyData = await getUserSpotifyData(user.id, 25)
   if (spotifyData.status === "success" && spotifyData.data.items.length === 0) {
     spotifyData = await getTopTracks()
   }
@@ -94,7 +94,7 @@ export default async function ProfilePage() {
                     )
                   : spotifyData.data.items
               ),
-              40
+              25
             ),
           }}
           favorites={favoriteTracksData.status === "success" ? favoriteTracksData.data.items.map(({ id }) => id) : []}
@@ -114,7 +114,7 @@ export default async function ProfilePage() {
                     )
                   : moviesData.data.items
               ),
-              40
+              25
             ),
           }}
           favorites={favoriteMoviesData.status === "success" ? favoriteMoviesData.data.items.map(({ id }) => id) : []}
@@ -134,7 +134,7 @@ export default async function ProfilePage() {
                     )
                   : animesData.data.items
               ),
-              40
+              25
             ),
           }}
           favorites={favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items.map(({ id }) => id) : []}
@@ -154,7 +154,7 @@ export default async function ProfilePage() {
                     )
                   : gamesData.data.items
               ),
-              40
+              25
             ),
           }}
           favorites={favoriteGamesData.status === "success" ? favoriteGamesData.data.items.map(({ id }) => id) : []}

@@ -23,7 +23,7 @@ export default async function NewUserPage({ params }: { params: { userId: string
     .single()
 
   if (error) {
-    console.error(error)
+    console.error(error.message)
     return
   }
 

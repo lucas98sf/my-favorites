@@ -45,7 +45,7 @@ export async function signUp(formData: SignUpUser): Promise<Result> {
   })
 
   if (error) {
-    console.error(error)
+    console.error(error.message)
     if (isAuthWeakPasswordError(error) || isAuthApiError(error)) {
       return {
         status: "error",
@@ -77,7 +77,7 @@ export async function signInWithGoogle(): Promise<Result> {
   })
 
   if (error) {
-    console.error(error)
+    console.error(error.message)
     return {
       status: "error",
       message: "An error occurred",
@@ -104,7 +104,7 @@ export async function signInWithSpotify(): Promise<Result> {
   })
 
   if (error) {
-    console.error(error)
+    console.error(error.message)
     return {
       status: "error",
       message: "An error occurred",

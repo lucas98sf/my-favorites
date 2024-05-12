@@ -10,7 +10,7 @@ import { Data, FavoriteItem } from "@/server/favorites"
 export const getTopRatedAnimes = cache(async (): Promise<Result<Data>> => {
   try {
     const result = await ky
-      .get("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=40", {
+      .get("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=25", {
         headers: {
           "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
         },
@@ -40,8 +40,8 @@ export const getTopRatedAnimes = cache(async (): Promise<Result<Data>> => {
     } as Result<Data>
 
     return response
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find MAL data",
@@ -86,8 +86,8 @@ export const getAnimeById = cache(async (id: string): Promise<Result<FavoriteIte
       })
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find MAL data",
@@ -117,8 +117,8 @@ export const searchAnimes = async (search: string, limit = 1): Promise<Result<Da
           },
         } as Result<Data>
       })
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find MAL data",
@@ -196,8 +196,8 @@ export const getUserTopRatedAnimes = cache(async (username: string): Promise<Res
     } as Result<Data>
 
     return response
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find MAL data",

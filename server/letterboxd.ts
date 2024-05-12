@@ -54,8 +54,8 @@ export const getLetterboxdFavorites = cache(async (username: string): Promise<Re
     }
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Letterboxd data",

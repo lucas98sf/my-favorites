@@ -58,7 +58,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
                   ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
                 )
               ),
-              50
+              25
             ),
           })
           setSearching(false)

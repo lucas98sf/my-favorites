@@ -23,7 +23,6 @@ export default async function UsernamePage({ params }: { params: { username: str
   }
 
   const profileData = await getProfileData(data.user_id)
-  const spotifyData = await getUserSpotifyData(data.user_id)
   const favoriteTracksData = await getFavorites(data.user_id, "tracks")
   const favoriteMoviesData = await getFavorites(data.user_id, "movies")
   const favoriteAnimesData = await getFavorites(data.user_id, "animes")
@@ -31,11 +30,6 @@ export default async function UsernamePage({ params }: { params: { username: str
 
   if (profileData.status === "error") {
     console.error(profileData.message)
-    return
-  }
-
-  if (spotifyData.status === "error") {
-    console.error(spotifyData.message)
     return
   }
 
@@ -63,18 +57,7 @@ export default async function UsernamePage({ params }: { params: { username: str
     <div className="flex flex-row">
       <Profile
         profileData={profileData.data}
-        spotifyData={{
-          type: "tracks",
-          items: take(
-            concat(
-              favoriteTracksData.data.items,
-              spotifyData.data.items.filter(
-                ({ id }) => !favoriteTracksData.data.items.some((favorite: any) => favorite.id === id)
-              )
-            ),
-            4
-          ),
-        }}
+        tracksData={favoriteTracksData.data}
         moviesData={favoriteMoviesData.data}
         animesData={favoriteAnimesData.data}
         gamesData={favoriteGamesData.data}

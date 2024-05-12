@@ -29,8 +29,8 @@ export const getPopularGames = cache(async (): Promise<Result<Data>> => {
     } as Result<Data>
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Backloggd data",
@@ -58,8 +58,8 @@ export const searchGames = async (search: string, limit = 1): Promise<Result<Dat
         items: results,
       },
     }
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Backloggd data",
@@ -99,8 +99,8 @@ export const getGameById = cache(async (id: string): Promise<Result<FavoriteItem
     }
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find IGDB data",

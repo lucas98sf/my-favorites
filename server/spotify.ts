@@ -108,8 +108,8 @@ export const getSpotifyToken = cache(async (userId: string | null = null): Promi
     }
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "There was an error getting your spotify token",
@@ -146,11 +146,14 @@ export const getUserSpotifyData = cache(async (userId: string | null = null, lim
     }
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
-      status: "error",
-      message: "Could not find Spotify data",
+      status: "success",
+      data: {
+        type: "tracks",
+        items: [],
+      },
     }
   }
 })
@@ -190,8 +193,8 @@ export const getTopTracks = cache(async (): Promise<Result<Data>> => {
       })
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Spotify data",
@@ -229,8 +232,8 @@ export async function getUserTopTracks({
           },
         } as Result<Data>
       })
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Spotify data",
@@ -260,8 +263,8 @@ export const getTrackById = cache(
               },
             }) as Result<FavoriteItem>
         )
-    } catch (error) {
-      console.error(error)
+    } catch (error: any) {
+      console.error(error.message)
       return {
         status: "error",
         message: "Could not find Spotify data",
@@ -302,8 +305,8 @@ export const searchTrack = async ({
           },
         } as Result<Data>
       })
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Spotify data",

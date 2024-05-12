@@ -40,8 +40,8 @@ export const getTopRatedMovies = cache(async (): Promise<Result<Data>> => {
     }
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find TMDB data",
@@ -71,8 +71,8 @@ export const getMovieById = cache(async (id: string): Promise<Result<FavoriteIte
       )
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find TMDB data",
@@ -103,8 +103,8 @@ export const searchMovies = async (search: string, limit = 1): Promise<Result<Da
           },
         } as Result<Data>
       })
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find TMDB data",

@@ -88,7 +88,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       await updateProfile({ avatar_url: url })
 
       setAvatarUrl(url)
-    } catch (error) {
+    } catch (error: any) {
       setError("Error uploading avatar!")
     } finally {
       setUpdating(false)

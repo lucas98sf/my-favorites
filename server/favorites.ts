@@ -114,8 +114,8 @@ export const getFavorites = cache(async (userId: string, type: FavoriteType): Pr
       status: "error",
       message: "Could not find favorites",
     }
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find favorites",
@@ -182,8 +182,8 @@ export async function favoriteItem({
       status: "success",
       data: (data as any)[type],
     }
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: `Could not ${action === "add" ? "add" : "remove"} item from favorites`,

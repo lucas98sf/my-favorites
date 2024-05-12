@@ -4,16 +4,16 @@ import { type FC } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
-import { Data } from "@/server/favorites"
+import { Data, FavoriteType } from "@/server/favorites"
 import { ProfileData } from "@/server/profiles"
 
 const Profile: FC<{
   profileData: ProfileData
-  spotifyData: Data
+  tracksData: Data
   moviesData: Data
   animesData: Data
   gamesData: Data
-}> = ({ profileData, spotifyData, moviesData, animesData, gamesData }) => {
+}> = ({ profileData, tracksData, moviesData, animesData, gamesData }) => {
   return (
     <Card className="m-auto py-10 p-8 mx-24">
       <div className="tracks flex flex-col gap-2">
@@ -32,10 +32,10 @@ const Profile: FC<{
           </div>
         </div>
         <div className="flex flex-row gap-4 mt-4">
-          {spotifyData.items.length > 0 && (
+          {tracksData.items.length > 0 && (
             <div className="flex flex-col gap-4">
               <span className="mb-4">Tracks</span>
-              {spotifyData.items.map((track: any, index: number) => (
+              {tracksData.items.map((track: any, index: number) => (
                 <iframe
                   key={index}
                   src={`https://open.spotify.com/embed/track/${track.id}`}

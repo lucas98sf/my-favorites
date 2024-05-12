@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         .eq("user_id", session?.user.id as string)
 
       if (error) {
-        console.error(error)
+        console.error(error.message)
         return redirect("/error")
       }
     }

@@ -14,7 +14,7 @@ export async function getUserProfile(user_id: string): Promise<Result<Partial<Pr
   const { data: spotifyData } = await client.from("spotify_data").select("expires_at").eq("user_id", user_id).single()
 
   if (error && status !== 406) {
-    console.error(error)
+    console.error(error.message)
   }
 
   if (data) {
@@ -54,7 +54,7 @@ export async function updateUserProfile(data: Partial<Profile & { user_id: strin
         code: statusText,
       }
     }
-    console.error(error)
+    console.error(error.message)
     return {
       status: "error",
       message: "There was an error updating your profile",
@@ -101,11 +101,11 @@ export async function getProfileData(userId: string): Promise<Result<ProfileData
         full_name: data?.full_name,
       },
     }
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
-      message: "Could not find Spotify data",
+      message: "Could not find profile data",
     }
   }
 }

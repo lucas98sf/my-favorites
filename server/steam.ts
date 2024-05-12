@@ -23,8 +23,8 @@ export const getPlayerProfileUrlById = cache(async (id: string): Promise<Result<
             data: data.response.players[0].profileurl,
           }) as Result<string>
       )
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Steam data",
@@ -80,8 +80,8 @@ export const getUserTopSteamGames = cache(async (userId: string): Promise<Result
     }
 
     return result
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    console.error(error.message)
     return {
       status: "error",
       message: "Could not find Steam data",
