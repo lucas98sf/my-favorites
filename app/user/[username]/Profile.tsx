@@ -22,7 +22,7 @@ const Profile: FC<{
   return (
     <Card className="m-auto py-10 p-8 mx-24">
       <div className="tracks flex flex-col gap-2">
-        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-2 gap-4 h-[20%]">
+        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-row gap-3">
             <Avatar className="size-32">
               <AvatarImage src={profileData.avatar_url} alt={profileData.username} />
@@ -82,10 +82,10 @@ const Profile: FC<{
           {moviesData.items.length > 0 && (
             <div className="flex flex-col">
               <span>Movies</span>
-              <div className="grid grid-cols-2 sm:gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {moviesData?.items?.map((movie: any, index: number) => (
-                  <div key={index} className="w-28">
-                    <div className="h-8 w-28 flex break-after-all">
+                  <div key={index} className="w-[144px]">
+                    <div className="h-8 w-[144px] flex break-after-all">
                       <p className="text-xs overflow-ellipsis self-end inline-block">
                         {truncate(movie.title, {
                           length: 50,
@@ -93,11 +93,12 @@ const Profile: FC<{
                       </p>
                     </div>
                     <Image
+                      loading="eager"
                       alt={movie.title}
                       src={movie.image}
-                      width="110"
-                      height="165"
-                      className="w-[110px] h-[165px] rounded-sm object-cover"
+                      width="144"
+                      height="192"
+                      className="w-[144px] h-[192px] rounded-sm object-cover"
                     />
                   </div>
                 ))}
@@ -107,10 +108,10 @@ const Profile: FC<{
           {animesData.items.length > 0 && (
             <div className="flex flex-col">
               <span>Animes</span>
-              <div className="grid grid-cols-2 sm:gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {animesData?.items?.map((anime: any, index: number) => (
-                  <div key={index} className="w-28">
-                    <div className="h-8 w-28 flex break-after-all">
+                  <div key={index} className="w-[144px]">
+                    <div className="h-8 w-[144px] flex break-after-all">
                       <p className="text-xs overflow-ellipsis self-end inline-block">
                         {truncate(anime.title, {
                           length: 50,
@@ -118,11 +119,12 @@ const Profile: FC<{
                       </p>
                     </div>
                     <Image
+                      loading="eager"
                       alt={anime.title}
                       src={anime.image}
-                      width="110"
-                      height="165"
-                      className="w-[110px] h-[165px] rounded-sm object-fill"
+                      width="144"
+                      height="192"
+                      className="w-[144px] h-[192px] rounded-sm object-fill"
                     />
                   </div>
                 ))}
@@ -132,10 +134,10 @@ const Profile: FC<{
           {gamesData.items.length > 0 && (
             <div className="flex flex-col">
               <span>Games</span>
-              <div className="grid grid-cols-2 sm:gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {gamesData?.items?.map((game: any, index: number) => (
-                  <div key={index} className="w-28">
-                    <div className="h-8 w-28 flex break-after-all">
+                  <div key={index} className="w-[144px]">
+                    <div className="h-8 w-[144px] flex break-after-all">
                       <p className="text-xs overflow-ellipsis self-end inline-block">
                         {truncate(game.title, {
                           length: 50,
@@ -143,11 +145,12 @@ const Profile: FC<{
                       </p>
                     </div>
                     <Image
+                      loading="eager"
                       alt={game.title}
                       src={game.image}
-                      width="110"
-                      height="165"
-                      className="w-[110px] h-[165px] rounded-sm object-fill"
+                      width="144"
+                      height="192"
+                      className="w-[144px] h-[192px] rounded-sm object-fill"
                     />
                   </div>
                 ))}
