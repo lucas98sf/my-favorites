@@ -62,7 +62,7 @@ const Profile: FC<{
         </div>
         <div className="flex flex-col gap-6 mt-4 sm:flex-row">
           {tracksData.items.length > 0 && (
-            <div className="flex flex-col gap-2 sm:gap-4">
+            <div className="flex flex-col gap-2 sm:gap-8">
               <span className="mb-4">Tracks</span>
               {tracksData.items.map((track: any, index: number) => (
                 <iframe
