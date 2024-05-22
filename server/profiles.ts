@@ -70,10 +70,11 @@ export async function updateUserProfile(data: Partial<Profile & { user_id: strin
 }
 
 export type ProfileData = {
-  avatar_url: string
+  avatarUrl: string
   username: string
-  full_name: string | null
+  fullName: string | null
   spotifyId: string | null
+  spotifyName: string | null
   steamUrl: string | null
   letterboxdUsername: string | null
   myAnimeListUsername: string | null
@@ -86,7 +87,7 @@ export async function getProfileData(userId: string): Promise<Result<ProfileData
 
     const { data, error, statusText } = await client
       .from("profiles")
-      .select("username, full_name, avatar_url, steam_id, letterboxd_username, mal_username, spotify_id")
+      .select("username, full_name, avatar_url, steam_id, letterboxd_username, mal_username, spotify_id, spotify_data")
       .eq("user_id", userId)
       .single()
 
@@ -103,10 +104,11 @@ export async function getProfileData(userId: string): Promise<Result<ProfileData
     return {
       status: "success",
       data: {
-        avatar_url: data?.avatar_url as string,
+        avatarUrl: data?.avatar_url as string,
         username: data?.username as string,
-        full_name: data?.full_name,
+        fullName: data?.full_name,
         spotifyId: data?.spotify_id as string,
+        spotifyName: (data?.spotify_data as any)?.full_name as string,
         steamUrl: steamId.status === "success" ? steamId.data : null,
         letterboxdUsername: data?.letterboxd_username as string,
         myAnimeListUsername: data?.mal_username as string,

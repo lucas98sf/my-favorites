@@ -2,11 +2,11 @@ import { truncate } from "lodash"
 import Image from "next/image"
 import Link from "next/link"
 import { type FC } from "react"
+import { SiSpotify as SpotifyIcon } from "react-icons/si"
+import { SiLetterboxd as LetterboxdIcon } from "react-icons/si"
+import { SiSteam as SteamIcon } from "react-icons/si"
+import { SiMyanimelist as MyanimelistIcon } from "react-icons/si"
 
-import LetterboxdIcon from "@/components/icons/LetterboxdIcon"
-import MyanimelistIcon from "@/components/icons/MyanimelistIcon"
-import SpotifyIcon from "@/components/icons/SpotifyIcon"
-import SteamIcon from "@/components/icons/SteamIcon"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Data } from "@/server/favorites"
@@ -22,40 +22,56 @@ const Profile: FC<{
   return (
     <Card className="m-auto py-10 p-8 mx-24">
       <div className="tracks flex flex-col gap-2">
-        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-4 gap-4">
           <div className="flex flex-row gap-3">
             <Avatar className="size-32">
-              <AvatarImage src={profileData.avatar_url} alt={profileData.username} />
+              <AvatarImage src={profileData.avatarUrl} alt={profileData.username} />
               <AvatarFallback>
-                {profileData.full_name
-                  ? profileData.full_name.split(" ").map(s => s[0].toUpperCase())
+                {profileData.fullName
+                  ? profileData.fullName.split(" ").map(s => s[0].toUpperCase())
                   : profileData.username[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col my-auto">
               <h1 className="text-3xl font-bold">{profileData.username}</h1>
-              <span className="mb-6">{profileData.full_name}</span>
+              <span className="mb-6">{profileData.fullName}</span>
             </div>
           </div>
-          <div className="flex flex-row gap-4">
+          <div className="flex flex-row gap-20 md:col-span-3 mx-auto">
             {profileData.spotifyId && (
-              <Link href={`https://open.spotify.com/user/${profileData.spotifyId}`} target="_blank">
-                <SpotifyIcon />
+              <Link
+                className="flex flex-row items-center gap-2"
+                href={`https://open.spotify.com/user/${profileData.spotifyId}`}
+                target="_blank"
+              >
+                <SpotifyIcon size="4em" />
+                <p className="hidden md:inline-block">{profileData.spotifyName}</p>
               </Link>
             )}
             {profileData.steamUrl && (
-              <Link href={profileData.steamUrl} target="_blank">
-                <SteamIcon />
+              <Link className="flex flex-row items-center gap-2" href={profileData.steamUrl} target="_blank">
+                <SteamIcon size="4em" />
+                <p className="hidden md:inline-block">{profileData.steamUrl.split("id/")[1].replace("/", "")}</p>
               </Link>
             )}
             {profileData.letterboxdUsername && (
-              <Link href={`https://letterboxd.com/${profileData.letterboxdUsername}/`} target="_blank">
-                <LetterboxdIcon />
+              <Link
+                className="flex flex-row items-center gap-2"
+                href={`https://letterboxd.com/${profileData.letterboxdUsername}/`}
+                target="_blank"
+              >
+                <LetterboxdIcon size="4em" />
+                <p className="hidden md:inline-block">{profileData.letterboxdUsername}</p>
               </Link>
             )}
             {profileData.myAnimeListUsername && (
-              <Link href={`https://myanimelist.net/profile/${profileData.myAnimeListUsername}/`} target="_blank">
-                <MyanimelistIcon />
+              <Link
+                className="flex flex-row items-center gap-2"
+                href={`https://myanimelist.net/profile/${profileData.myAnimeListUsername}/`}
+                target="_blank"
+              >
+                <MyanimelistIcon size="4em" />
+                <p className="hidden md:inline-block">{profileData.myAnimeListUsername}</p>
               </Link>
             )}
           </div>
