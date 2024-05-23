@@ -22,11 +22,11 @@ import { Database } from "@/supabase/database.types"
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
 const profileSchema = z.object({
-  username: z.string().regex(new RegExp("^[a-zA-Z0-9_]*$")).min(3).max(20).optional(),
-  full_name: z.string().min(3).optional(),
-  mal_username: z.string().min(3).optional(),
-  letterboxd_username: z.string().min(3).optional(),
-  steam_id: z.string().min(17).optional(),
+  username: z.string().regex(new RegExp("^[a-zA-Z0-9_]*$")).min(3).max(20).or(z.literal("")).optional(),
+  full_name: z.string().min(3).or(z.literal("")).optional(),
+  mal_username: z.string().min(3).or(z.literal("")).optional(),
+  letterboxd_username: z.string().min(3).or(z.literal("")).optional(),
+  steam_id: z.string().min(17).or(z.literal("")).optional(),
 })
 
 interface ProfileFormProps {
@@ -101,6 +101,7 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
       setError(null)
       setSuccess(null)
 
+      console.log(data)
       const result = await updateUserProfile({ ...data, user_id: user?.id as string })
       if (result.status === "error") {
         if (result.code === "Conflict") {

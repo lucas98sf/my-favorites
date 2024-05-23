@@ -22,13 +22,19 @@ export const getPlayerProfileUsernameById = cache(async (id: string | null): Pro
     return ky
       .get(url)
       .json<any>()
-      .then(
-        data =>
-          ({
+      .then(data => {
+        if (data.response.players[0]) {
+          return {
             status: "success",
             data: data.response.players[0].profileurl.split("/")[4],
-          }) as Result<string>
-      )
+          } as Result<string>
+        } else {
+          return {
+            status: "error",
+            message: "No player found",
+          }
+        }
+      })
   } catch (error: any) {
     console.error(error.message)
     return {
