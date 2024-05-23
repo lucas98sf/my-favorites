@@ -12,7 +12,7 @@ export default async function NewUserPage({ params }: { params: { userId: string
     .from("profiles")
     .upsert(
       {
-        username: generateSlug().replaceAll(/-/g, "_"),
+        username: generateSlug().slice(0, 20).replaceAll(/-/g, "_"),
       },
       {
         onConflict: "user_id",
@@ -27,5 +27,5 @@ export default async function NewUserPage({ params }: { params: { userId: string
     return
   }
 
-  redirect(`/user/${data.username}`)
+  redirect("/profile")
 }

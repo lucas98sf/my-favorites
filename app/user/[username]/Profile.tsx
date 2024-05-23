@@ -22,8 +22,8 @@ const Profile: FC<{
   return (
     <Card className="m-auto py-10 p-8 mx-24">
       <div className="tracks flex flex-col gap-2">
-        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="flex flex-row gap-3">
+        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-3 gap-4 max-w-screen-lg">
+          <div className="flex flex-row gap-3 md:col-span-1 w-[100%]">
             <Avatar className="size-32">
               <AvatarImage src={profileData.avatarUrl} alt={profileData.username} />
               <AvatarFallback>
@@ -33,11 +33,11 @@ const Profile: FC<{
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col my-auto">
-              <h1 className="text-3xl font-bold">{profileData.username}</h1>
+              <h1 className="text-2xl font-bold overflow-ellipsis break-all">{profileData.username}</h1>
               <span className="mb-6">{profileData.fullName}</span>
             </div>
           </div>
-          <div className="flex flex-row gap-20 md:col-span-3 mx-auto">
+          <div className="flex flex-row gap-20 md:col-span-2 mx-auto">
             {profileData.spotifyId && (
               <Link
                 className="flex flex-row items-center gap-2"
@@ -48,10 +48,14 @@ const Profile: FC<{
                 <p className="hidden md:inline-block">{profileData.spotifyName}</p>
               </Link>
             )}
-            {profileData.steamUrl && (
-              <Link className="flex flex-row items-center gap-2" href={profileData.steamUrl} target="_blank">
+            {profileData.steamUsername && (
+              <Link
+                className="flex flex-row items-center gap-2"
+                href={`https://steamcommunity.com/id/${profileData.steamUsername}/`}
+                target="_blank"
+              >
                 <SteamIcon size="4em" />
-                <p className="hidden md:inline-block">{profileData.steamUrl.split("id/")[1].replace("/", "")}</p>
+                <p className="hidden md:inline-block">{profileData.steamUsername}</p>
               </Link>
             )}
             {profileData.letterboxdUsername && (

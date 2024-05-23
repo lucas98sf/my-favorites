@@ -1,5 +1,5 @@
 "use server"
-import { kv } from "@vercel/kv"
+
 import igdb from "igdb-api-node"
 import ky from "ky"
 import { take } from "lodash"

@@ -1,5 +1,5 @@
 "use server"
-import { kv } from "@vercel/kv"
+
 import ky from "ky"
 import { sortBy } from "lodash"
 import { cache } from "react"
@@ -8,8 +8,14 @@ import { Result } from "@/lib/types"
 import { searchGames } from "@/server/backloggd"
 import { Data } from "@/server/favorites"
 
-export const getPlayerProfileUrlById = cache(async (id: string): Promise<Result<string>> => {
+export const getPlayerProfileUsernameById = cache(async (id: string | null): Promise<Result<string | null>> => {
   try {
+    if (!id) {
+      return {
+        status: "error",
+        message: "No id provided",
+      }
+    }
     const url = new URL(`http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/`)
     url.searchParams.append("key", process.env.STEAM_API_KEY as string)
     url.searchParams.append("steamids", id)
@@ -20,7 +26,7 @@ export const getPlayerProfileUrlById = cache(async (id: string): Promise<Result<
         data =>
           ({
             status: "success",
-            data: data.response.players[0].profileurl,
+            data: data.response.players[0].profileurl.split("/")[4],
           }) as Result<string>
       )
   } catch (error: any) {

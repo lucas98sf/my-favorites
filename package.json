@@ -22,7 +22,6 @@
     "@vercel/kv": "^1.0.1",
     "@vercel/speed-insights": "^1.0.10",
     "autoprefixer": "10.4.17",
-    "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "igdb-api-node": "^5.0.2",

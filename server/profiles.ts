@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
-import { getPlayerProfileUrlById } from "@/server/steam"
+import { getPlayerProfileUsernameById } from "@/server/steam"
 import { Database } from "@/supabase/database.types"
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
@@ -75,7 +75,7 @@ export type ProfileData = {
   fullName: string | null
   spotifyId: string | null
   spotifyName: string | null
-  steamUrl: string | null
+  steamUsername: string | null
   letterboxdUsername: string | null
   myAnimeListUsername: string | null
 }
@@ -99,19 +99,19 @@ export async function getProfileData(userId: string): Promise<Result<ProfileData
       }
     }
 
-    const steamId = await getPlayerProfileUrlById(data?.steam_id as string)
+    const steamUsername = await getPlayerProfileUsernameById(data?.steam_id)
 
     return {
       status: "success",
       data: {
-        avatarUrl: data?.avatar_url as string,
-        username: data?.username as string,
+        avatarUrl: data?.avatar_url ?? "",
+        username: data?.username ?? "",
         fullName: data?.full_name,
-        spotifyId: data?.spotify_id as string,
-        spotifyName: (data?.spotify_data as any)?.full_name as string,
-        steamUrl: steamId.status === "success" ? steamId.data : null,
-        letterboxdUsername: data?.letterboxd_username as string,
-        myAnimeListUsername: data?.mal_username as string,
+        spotifyId: data?.spotify_id,
+        spotifyName: (data?.spotify_data as any)?.full_name,
+        steamUsername: steamUsername.status === "success" ? steamUsername.data : null,
+        letterboxdUsername: data?.letterboxd_username,
+        myAnimeListUsername: data?.mal_username,
       },
     }
   } catch (error: any) {
