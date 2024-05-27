@@ -37,7 +37,7 @@ const Profile: FC<{
               <span className="mb-6">{profileData.fullName}</span>
             </div>
           </div>
-          <div className="flex flex-row gap-20 md:col-span-2 mx-auto">
+          <div className="flex flex-row gap-4 md:gap-20 md:col-span-2 mx-auto">
             {profileData.spotifyId && (
               <Link
                 className="flex flex-row items-center gap-2"
@@ -88,11 +88,7 @@ const Profile: FC<{
                 <iframe
                   key={index}
                   src={`https://open.spotify.com/embed/track/${track.id}`}
-                  style={{
-                    borderRadius: "18px",
-                  }}
-                  width="300"
-                  height="80"
+                  className="h-[72px] w-[300px] rounded-[18px] md:h-[80px]"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   loading="eager"
                 />
