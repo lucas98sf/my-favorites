@@ -4,7 +4,8 @@
     "dev": "next --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --fix",
+    "lint": "eslint --fix .",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky install",
     "gentypes": "supabase gen types typescript --project-id ggzalqnaowvopihbidxf > ./supabase/database.types.ts"
   },
@@ -43,7 +44,7 @@
     "tailwind-merge": "^2.2.2",
     "tailwindcss": "3.4.1",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.3.3",
+    "typescript": "^5.5.1-rc",
     "zod": "^3.22.4"
   },
   "devDependencies": {

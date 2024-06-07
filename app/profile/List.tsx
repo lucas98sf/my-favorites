@@ -2,7 +2,7 @@
 import { MagnifyingGlassIcon, StarFilledIcon, StarIcon } from "@radix-ui/react-icons"
 import { concat, debounce, take, truncate } from "lodash"
 import Image from "next/image"
-import { type FC, useCallback, useEffect, useState } from "react"
+import { type FC, SetStateAction, useCallback, useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -30,7 +30,11 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
 
   const favoriteUserItem = useCallback(
     async (id: string, type: FavoriteType, action: "add" | "remove" = "add") => {
-      setFavorites((await handleFavorites({ currentData: { [type]: favorites }, id, type, action }))[type])
+      setFavorites(
+        (await handleFavorites({ currentData: { [type]: favorites }, id, type, action }))[type] as SetStateAction<
+          string[]
+        >
+      )
       await favoriteItem({ userId, id, type, action })
     },
     [favorites, userId]

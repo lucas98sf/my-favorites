@@ -80,7 +80,7 @@ export const getUserTopSteamGames = cache(async (userId: string): Promise<Result
     )
 
     const gameData = (await Promise.all(gameNames.map(game => searchGames(game)))).flatMap(game =>
-      game.status === "success" ? game.data.items[0] : []
+      game.status === "success" && game.data.items[0] ? [game.data.items[0]] : []
     )
 
     const result: Result<Data> = {

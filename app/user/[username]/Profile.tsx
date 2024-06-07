@@ -28,7 +28,7 @@ const Profile: FC<{
               <AvatarImage src={profileData.avatarUrl} alt={profileData.username} />
               <AvatarFallback>
                 {profileData.fullName
-                  ? profileData.fullName.split(" ").map(s => s[0].toUpperCase())
+                  ? profileData.fullName.split(" ").map(s => s[0]?.toUpperCase())
                   : profileData.username[0]}
               </AvatarFallback>
             </Avatar>

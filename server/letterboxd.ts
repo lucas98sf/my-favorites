@@ -47,8 +47,8 @@ export const getLetterboxdFavorites = cache(async (username: string): Promise<Re
       status: "success",
       data: {
         type: "movies",
-        items: (await Promise.all(movies.map(movie => searchMovies(movie.slug)) ?? [])).flatMap(movie =>
-          movie.status === "success" ? [movie.data.items[0]] : []
+        items: (await Promise.all(movies.map(movie => searchMovies(movie.slug as string)) ?? [])).flatMap(movie =>
+          movie.status === "success" && movie.data.items[0] ? [movie.data.items[0]] : []
         ),
       },
     }

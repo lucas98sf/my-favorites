@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = cookies()
     const supabase = createSupabaseServerClient(cookieStore)
     const {
-      data: { session, user },
+      data: { session },
     } = await supabase.auth.exchangeCodeForSession(code)
 
     //filter spotify auth by checking if it's not an google token

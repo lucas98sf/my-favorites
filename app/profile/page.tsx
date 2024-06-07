@@ -9,7 +9,7 @@ import { getTopRatedAnimes, getUserTopRatedAnimes } from "@/server/myanimelist"
 import { getUserProfile } from "@/server/profiles"
 import { getTopTracks, getUserSpotifyData } from "@/server/spotify"
 import { getUserTopSteamGames } from "@/server/steam"
-import { getTopRatedMovies, searchMovies } from "@/server/tmdb"
+import { getTopRatedMovies } from "@/server/tmdb"
 
 import List from "./List"
 import ProfileForm from "./ProfileForm"

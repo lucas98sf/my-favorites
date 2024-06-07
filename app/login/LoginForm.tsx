@@ -243,7 +243,7 @@ export default function LoginForm() {
                 <Button
                   disabled={loading}
                   variant="secondary"
-                  onClick={e => {
+                  onClick={_ => {
                     setMode("login")
                     loginForm.reset()
                     setError(false)

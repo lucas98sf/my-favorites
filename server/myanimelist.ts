@@ -69,7 +69,7 @@ export const getAnimeById = cache(async (id: string): Promise<Result<FavoriteIte
             },
           }) as Result<FavoriteItem>
       )
-      .catch(error => {
+      .catch(async _ => {
         return ky
           .get(`https://api.jikan.moe/v4/anime/${id}`)
           .json<any>()

@@ -8,7 +8,7 @@ export default async function NewUserPage({ params }: { params: { userId: string
   const cookieStore = cookies()
   const client = createSupabaseServerClient(cookieStore)
 
-  const { data, error } = await client
+  const { error } = await client
     .from("profiles")
     .upsert(
       {

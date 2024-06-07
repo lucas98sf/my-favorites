@@ -72,8 +72,8 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
         throw new Error("You must select an image to upload.")
       }
 
-      const file = event.target.files[0]
-      const filePath = `${user?.id}/${file.name}`
+      const file = event.target.files[0] as File
+      const filePath = `${user?.id}/${file?.name}`
 
       const { data, error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, {
         upsert: true,
@@ -127,8 +127,8 @@ const ProfileForm: FC<ProfileFormProps> = ({ spotifyLinked, user }) => {
           <AvatarImage src={avatarUrl} alt={user?.username ?? undefined} />
           <AvatarFallback>
             {user.full_name
-              ? user.full_name.split(" ").map(s => s[0].toUpperCase())
-              : user?.username?.[0].toUpperCase()}
+              ? user.full_name.split(" ").map(s => s[0]?.toUpperCase())
+              : user?.username?.[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <Label className="text-right" htmlFor="upload">
