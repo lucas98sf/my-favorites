@@ -4,13 +4,14 @@ import ky from "ky"
 import { omit } from "lodash"
 import { cache } from "react"
 
+import { MAX_PROFILE_ITEMS } from "@/lib/constants"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
 
 export const getTopRatedAnimes = cache(async (): Promise<Result<Data>> => {
   try {
     const result = await ky
-      .get("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=25", {
+      .get(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=${MAX_PROFILE_ITEMS}`, {
         headers: {
           "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID as string,
         },

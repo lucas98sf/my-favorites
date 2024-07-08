@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import PQueue from "p-queue"
 import { cache } from "react"
 
+import { MAX_FAVORITES } from "@/lib/constants"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { getGameById } from "@/server/backloggd"
@@ -136,7 +137,7 @@ export async function handleFavorites({
 }) {
   return action === "remove"
     ? { [type]: filter(currentData?.[type] ?? [], currentDataId => currentDataId != id) }
-    : { [type]: takeRight([...new Set([...(currentData?.[type] ?? []), id])], 4) }
+    : { [type]: takeRight([...new Set([...(currentData?.[type] ?? []), id])], MAX_FAVORITES) }
 }
 
 export async function favoriteItem({

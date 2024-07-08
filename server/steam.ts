@@ -4,6 +4,7 @@ import ky from "ky"
 import { sortBy } from "lodash"
 import { cache } from "react"
 
+import { MAX_FAVORITES } from "@/lib/constants"
 import { Result } from "@/lib/types"
 import { searchGames } from "@/server/backloggd"
 import { Data } from "@/server/favorites"
@@ -26,7 +27,7 @@ export const getPlayerProfileUsernameById = cache(async (id: string | null): Pro
         if (data.response.players[0]) {
           return {
             status: "success",
-            data: data.response.players[0].profileurl.split("/")[4],
+            data: data.response.players[0].profileurl.split("/")[MAX_FAVORITES],
           } as Result<string>
         } else {
           return {

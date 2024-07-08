@@ -1,6 +1,7 @@
 import { concat, take } from "lodash"
 import { cookies } from "next/headers"
 
+import { MAX_PROFILE_ITEMS } from "@/lib/constants"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPopularGames } from "@/server/backloggd"
 import { getFavorites } from "@/server/favorites"
@@ -33,7 +34,7 @@ export default async function ProfilePage() {
   }
 
   const favoriteTracksData = await getFavorites(user.id, "tracks")
-  let spotifyData = await getUserSpotifyData(user.id, 25)
+  let spotifyData = await getUserSpotifyData(user.id, MAX_PROFILE_ITEMS)
   if (spotifyData.status === "success" && spotifyData.data.items.length === 0) {
     spotifyData = await getTopTracks()
   }
@@ -94,7 +95,7 @@ export default async function ProfilePage() {
                     )
                   : spotifyData.data.items
               ),
-              25
+              MAX_PROFILE_ITEMS
             ),
           }}
           favorites={favoriteTracksData.status === "success" ? favoriteTracksData.data.items.map(({ id }) => id) : []}
@@ -114,7 +115,7 @@ export default async function ProfilePage() {
                     )
                   : moviesData.data.items
               ),
-              25
+              MAX_PROFILE_ITEMS
             ),
           }}
           favorites={favoriteMoviesData.status === "success" ? favoriteMoviesData.data.items.map(({ id }) => id) : []}
@@ -134,7 +135,7 @@ export default async function ProfilePage() {
                     )
                   : animesData.data.items
               ),
-              25
+              MAX_PROFILE_ITEMS
             ),
           }}
           favorites={favoriteAnimesData.status === "success" ? favoriteAnimesData.data.items.map(({ id }) => id) : []}
@@ -154,7 +155,7 @@ export default async function ProfilePage() {
                     )
                   : gamesData.data.items
               ),
-              25
+              MAX_PROFILE_ITEMS
             ),
           }}
           favorites={favoriteGamesData.status === "success" ? favoriteGamesData.data.items.map(({ id }) => id) : []}

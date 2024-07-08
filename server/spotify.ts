@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import { cache } from "react"
 import SpotifyWebApi from "spotify-web-api-node"
 
+import { MAX_FAVORITES } from "@/lib/constants"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Result } from "@/lib/types"
 import { Data, FavoriteItem } from "@/server/favorites"
@@ -117,20 +118,38 @@ export const getSpotifyToken = cache(async (userId: string | null = null): Promi
   }
 })
 
-export const getUserSpotifyData = cache(async (userId: string | null = null, limit = 4): Promise<Result<Data>> => {
-  try {
-    const spotifyToken = await getSpotifyToken(userId)
+export const getUserSpotifyData = cache(
+  async (userId: string | null = null, limit = MAX_FAVORITES): Promise<Result<Data>> => {
+    try {
+      const spotifyToken = await getSpotifyToken(userId)
 
-    if (spotifyToken.status === "error") {
-      return {
-        status: "error",
-        message: "There was an error getting your spotify token",
+      if (spotifyToken.status === "error") {
+        return {
+          status: "error",
+          message: "There was an error getting your spotify token",
+        }
       }
-    }
 
-    const spotifyApiData = await getUserTopTracks({ spotifyToken: spotifyToken.data.access_token as string, limit })
+      const spotifyApiData = await getUserTopTracks({ spotifyToken: spotifyToken.data.access_token as string, limit })
 
-    if (spotifyApiData.status === "error") {
+      if (spotifyApiData.status === "error") {
+        return {
+          status: "success",
+          data: {
+            type: "tracks",
+            items: [],
+          },
+        }
+      }
+
+      const result: Result<Data> = {
+        status: "success",
+        data: spotifyApiData.data,
+      }
+
+      return result
+    } catch (error: any) {
+      console.error(error.message)
       return {
         status: "success",
         data: {
@@ -139,24 +158,8 @@ export const getUserSpotifyData = cache(async (userId: string | null = null, lim
         },
       }
     }
-
-    const result: Result<Data> = {
-      status: "success",
-      data: spotifyApiData.data,
-    }
-
-    return result
-  } catch (error: any) {
-    console.error(error.message)
-    return {
-      status: "success",
-      data: {
-        type: "tracks",
-        items: [],
-      },
-    }
   }
-})
+)
 
 export const getTopTracks = cache(async (): Promise<Result<Data>> => {
   try {

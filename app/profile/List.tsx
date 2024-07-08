@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { MAX_PROFILE_ITEMS, MAX_PROFILE_SEARCH_ITEMS } from "@/lib/constants"
 import { searchGames } from "@/server/backloggd"
 import { Data, favoriteItem, FavoriteType, getFavorites, handleFavorites } from "@/server/favorites"
 import { searchAnimes } from "@/server/myanimelist"
@@ -62,7 +63,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
                   ({ id }) => !favoritesData.data.items.some((favorite: any) => favorite.id === id)
                 )
               ),
-              25
+              MAX_PROFILE_ITEMS
             ),
           })
           setSearching(false)
@@ -85,7 +86,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
             const tracksData = await searchTracks({
               spotifyToken: spotifyToken.data.access_token as string,
               search: searchValue,
-              limit: 10,
+              limit: MAX_PROFILE_SEARCH_ITEMS,
             })
 
             if (tracksData.status === "error") {
@@ -99,7 +100,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
           case "movies": {
             setSearching(true)
 
-            const moviesData = await searchMovies(searchValue, 10)
+            const moviesData = await searchMovies(searchValue, MAX_PROFILE_SEARCH_ITEMS)
 
             if (moviesData.status === "error") {
               return
@@ -112,7 +113,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
           case "animes": {
             setSearching(true)
 
-            const animesData = await searchAnimes(searchValue, 10)
+            const animesData = await searchAnimes(searchValue, MAX_PROFILE_SEARCH_ITEMS)
 
             if (animesData.status === "error") {
               return
@@ -125,7 +126,7 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
           case "games": {
             setSearching(true)
 
-            const animesData = await searchGames(searchValue, 10)
+            const animesData = await searchGames(searchValue, MAX_PROFILE_SEARCH_ITEMS)
 
             if (animesData.status === "error") {
               return
