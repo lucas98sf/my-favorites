@@ -1,6 +1,7 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Link1Icon, UpdateIcon } from "@radix-ui/react-icons"
+import { englishDataset, englishRecommendedTransformers, RegExpMatcher } from "obscenity"
 import { FC, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -14,6 +15,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { INVALID_USERNAMES } from "@/lib/constants"
 import useSupabaseBrowser from "@/lib/supabase/browser"
 import { cn } from "@/lib/utils"
 import { updateUserProfile } from "@/server/profiles"
@@ -21,8 +23,28 @@ import { Database } from "@/supabase/database.types"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
+const matcher = new RegExpMatcher({
+  ...englishDataset.build(),
+  ...englishRecommendedTransformers,
+})
+
 const profileSchema = z.object({
-  username: z.string().regex(new RegExp("^[a-zA-Z0-9_]*$")).min(3).max(20).or(z.literal("")).optional(),
+  username: z
+    .string()
+    .regex(new RegExp("^[a-zA-Z0-9_]*$"))
+    .min(3)
+    .max(20)
+    .or(z.literal(""))
+    .optional()
+    .superRefine(value => {
+      if (value && matcher.hasMatch(value)) {
+        return { message: "Username contains inappropriate language." }
+      }
+      if (value && INVALID_USERNAMES.some(name => value === name)) {
+        return { message: "Username is reserved." }
+      }
+      return true
+    }),
   full_name: z.string().min(3).or(z.literal("")).optional(),
   mal_username: z.string().min(3).or(z.literal("")).optional(),
   letterboxd_username: z.string().min(3).or(z.literal("")).optional(),
