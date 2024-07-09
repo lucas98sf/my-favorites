@@ -88,9 +88,9 @@ const Profile: FC<{
                 <iframe
                   key={index}
                   src={`https://open.spotify.com/embed/track/${track.id}`}
-                  className="h-[72px] w-[300px] rounded-[18px] md:h-[80px]"
+                  className="h-[72px] w-[300px] rounded-[18px] md:h-[80px] overflow-hidden"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="eager"
+                  scrolling="no"
                 />
               ))}
             </div>
