@@ -34,45 +34,50 @@ Make sure you have the following installed on your local machine:
 ### Installation
 
 1. **Clone the repository:**
-    ```sh
-    git clone https://github.com/yourusername/my-favorites.git
-    cd my-favorites
-    ```
+
+   ```sh
+   git clone https://github.com/yourusername/my-favorites.git
+   cd my-favorites
+   ```
 
 2. **Install dependencies:**
-    ```sh
-    bun install
-    ```
+
+   ```sh
+   bun install
+   ```
 
 3. **Set up Supabase:**
-    - Create a new project on [Supabase](https://supabase.io).
-    - Obtain your Supabase URL and API Key.
-    - Create a `.env.local` file in the root directory and add your Supabase credentials:
-        ```sh
-        NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-        NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-        ```
+
+   - Create a new project on [Supabase](https://supabase.io).
+   - Obtain your Supabase URL and API Key.
+   - Create a `.env.local` file in the root directory and add your Supabase credentials:
+     ```sh
+     NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+     ```
 
 4. **Run the development server:**
-    ```sh
-    bun run dev
-    ```
 
-    Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+   ```sh
+   bun run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## Usage
 
 1. **Create your profile:**
-    - Enter your name and choose your favorite film, anime, music, and game.
-    
+   - Enter your name and choose your favorite film, anime, music, and game.
 2. **Add your links:**
-    - Provide links to your Spotify, Steam, Letterboxd, and MyAnimeList profiles for a more personalized experience.
+
+   - Provide links to your Spotify, Steam, Letterboxd, and MyAnimeList profiles for a more personalized experience.
 
 3. **Get recommendations:**
-    - Based on your linked profiles, receive recommendations for films, anime, music, and games you might enjoy.
+
+   - Based on your linked profiles, receive recommendations for films, anime, music, and games you might enjoy.
 
 4. **Share your profile:**
-    - After creating your profile, you'll have a unique URL that you can share with others to showcase your favorites `(http://myfavorites.vercel.app/user/USERNAME)`.
+   - After creating your profile, you'll have a unique URL that you can share with others to showcase your favorites `(http://myfavorites.bio/USERNAME)`.
 
 ## Contributing
 

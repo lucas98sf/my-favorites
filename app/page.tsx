@@ -21,7 +21,7 @@ export default async function IndexPage({ searchParams }: { searchParams: Record
     const { data } = await client.from("profiles").select("username").eq("user_id", user.id).single()
 
     if (data?.username) {
-      redirect(`/user/${data.username}`)
+      redirect(`/${data.username}`)
     } else {
       redirect(`/new-user/${user.id}`)
     }
