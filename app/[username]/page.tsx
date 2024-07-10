@@ -20,11 +20,14 @@ export default async function UsernamePage({ params }: { params: { username: str
     redirect("/404")
   }
 
-  const profileData = await getProfileData(data.user_id)
-  const favoriteTracksData = await getFavorites(data.user_id, "tracks")
-  const favoriteMoviesData = await getFavorites(data.user_id, "movies")
-  const favoriteAnimesData = await getFavorites(data.user_id, "animes")
-  const favoriteGamesData = await getFavorites(data.user_id, "games")
+  const [profileData, favoriteTracksData, favoriteMoviesData, favoriteAnimesData, favoriteGamesData] =
+    await Promise.all([
+      getProfileData(data.user_id),
+      getFavorites(data.user_id, "tracks"),
+      getFavorites(data.user_id, "movies"),
+      getFavorites(data.user_id, "animes"),
+      getFavorites(data.user_id, "games"),
+    ])
 
   if (profileData.status === "error") {
     console.error(profileData.message)

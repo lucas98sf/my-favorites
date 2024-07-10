@@ -33,33 +33,47 @@ export default async function ProfilePage() {
     return
   }
 
-  const favoriteTracksData = await getFavorites(user.id, "tracks")
   let spotifyData = await getUserSpotifyData(user.id, MAX_PROFILE_ITEMS)
   if (spotifyData.status === "success" && spotifyData.data.items.length === 0) {
     spotifyData = await getTopTracks()
   }
 
-  const favoriteMoviesData = await getFavorites(user.id, "movies")
-  const letterboxdFavorites = await getLetterboxdFavorites(profileData.data.letterboxd_username as string)
-  const moviesData = await getTopRatedMovies()
+  const [
+    favoriteTracksData,
+    favoriteMoviesData,
+    letterboxdFavorites,
+    moviesData,
+    favoriteAnimesData,
+    malFavorites,
+    animesData,
+    favoriteGamesData,
+    steamFavorites,
+    gamesData,
+  ] = await Promise.all([
+    getFavorites(user.id, "tracks"),
+    getFavorites(user.id, "movies"),
+    getLetterboxdFavorites(profileData.data.letterboxd_username as string),
+    getTopRatedMovies(),
+    getFavorites(user.id, "animes"),
+    getUserTopRatedAnimes(profileData.data.mal_username as string),
+    getTopRatedAnimes(),
+    getFavorites(user.id, "games"),
+    getUserTopSteamGames(profileData.data.steam_id as string),
+    getPopularGames(),
+  ])
+
   if (moviesData.status === "success" && letterboxdFavorites.status === "success") {
     moviesData.data.items
       .filter(movies => !letterboxdFavorites.data.items?.some(({ id }) => id === movies.id))
       .unshift(...letterboxdFavorites.data.items)
   }
 
-  const favoriteAnimesData = await getFavorites(user.id, "animes")
-  const malFavorites = await getUserTopRatedAnimes(profileData.data.mal_username as string)
-  const animesData = await getTopRatedAnimes()
   if (malFavorites.status === "success" && animesData.status === "success") {
     animesData.data.items
       .filter(animes => !malFavorites.data.items?.some(({ id }) => id === animes.id))
       .unshift(...malFavorites.data.items)
   }
 
-  const favoriteGamesData = await getFavorites(user.id, "games")
-  const steamFavorites = await getUserTopSteamGames(profileData.data.steam_id as string)
-  const gamesData = await getPopularGames()
   if (steamFavorites.status === "success" && gamesData.status === "success") {
     gamesData.data.items
       .filter(games => !steamFavorites.data.items?.some(({ id }) => id === games.id))
