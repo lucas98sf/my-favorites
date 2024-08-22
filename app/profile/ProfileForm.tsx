@@ -15,7 +15,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { INVALID_USERNAMES } from "@/lib/constants"
+import { INVALID_USERNAMES, MAX_USERNAME_LENGTH } from "@/lib/constants"
 import useSupabaseBrowser from "@/lib/supabase/browser"
 import { cn } from "@/lib/utils"
 import { updateUserProfile } from "@/server/profiles"
@@ -33,7 +33,7 @@ const profileSchema = z.object({
     .string()
     .regex(new RegExp("^[a-zA-Z0-9_]*$"))
     .min(3)
-    .max(20)
+    .max(MAX_USERNAME_LENGTH)
     .or(z.literal(""))
     .optional()
     .superRefine(value => {

@@ -168,6 +168,11 @@ const List: FC<ListProps> = ({ userId, data: givenData, favorites: givenFavorite
             onChange={e => {
               setSearch(e.target.value)
             }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                handleSearch(search)
+              }
+            }}
             value={search}
           />
           {showClearButton && (

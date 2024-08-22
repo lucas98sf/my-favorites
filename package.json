@@ -20,6 +20,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.44.3",
+    "@vercel/functions": "^1.4.1",
     "@vercel/kv": "^1.0.1",
     "@vercel/speed-insights": "^1.0.12",
     "autoprefixer": "10.4.17",
