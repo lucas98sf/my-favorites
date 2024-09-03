@@ -1,6 +1,7 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { EnvelopeOpenIcon, SpeakerLoudIcon } from "@radix-ui/react-icons"
+import { waitUntil } from "@vercel/functions"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -86,53 +87,59 @@ export default function LoginForm() {
     setLoading(false)
   }
 
-  const handleGoogleSubmit = async () => {
-    setLoading(true)
-    setError(false)
-
-    signInWithGoogle()
-      .then((result: Result) => {
-        if (result?.status === "error") {
-          setError(true)
-        }
-      })
-      .catch(() => {
-        setError(true)
-      })
-
-    setLoading(false)
-  }
-
-  const handleSpotifySubmit = async () => {
-    setLoading(true)
-    setError(false)
-
-    signInWithSpotify()
-      .then((result: Result) => {
-        if (result?.status === "error") {
-          console.error(result.message)
-          setError(true)
-        }
-      })
-      .catch(() => {
-        setError(true)
-      })
-
-    setLoading(false)
-  }
-
   return (
     <Card className="m-auto py-10 p-8">
       {error && <ErrorAlert />}
       <CardHeader>
         <h1 className="text-2xl font-bold">{mode === "login" ? "Login" : "Sign Up"}</h1>
         <div className="flex flex-col gap-3">
-          <form onSubmit={handleGoogleSubmit}>
+          <form
+            onSubmit={() => {
+              setLoading(true)
+              setError(false)
+
+              waitUntil(
+                signInWithGoogle()
+                  .then((result: Result) => {
+                    if (result?.status === "error") {
+                      setError(true)
+                    }
+                  })
+                  .catch(error => {
+                    console.error(error)
+                    setError(true)
+                  })
+              )
+
+              setLoading(false)
+            }}
+          >
             <Button disabled={loading} type="submit" className="w-[100%]">
               <EnvelopeOpenIcon className="mr-2 h-4 w-4" /> SignIn with Google
             </Button>
           </form>
-          <form onSubmit={handleSpotifySubmit}>
+          <form
+            action={() => {
+              setLoading(true)
+              setError(false)
+
+              waitUntil(
+                signInWithSpotify()
+                  .then((result: Result) => {
+                    if (result?.status === "error") {
+                      console.error(result.message)
+                      setError(true)
+                    }
+                  })
+                  .catch(() => {
+                    console.error(error)
+                    setError(true)
+                  })
+              )
+
+              setLoading(false)
+            }}
+          >
             <Button disabled={loading} type="submit" className="w-[100%]">
               <SpeakerLoudIcon className="mr-2 h-4 w-4" /> SignIn with Spotify
             </Button>
