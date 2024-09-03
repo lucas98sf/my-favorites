@@ -1,7 +1,6 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { EnvelopeOpenIcon, SpeakerLoudIcon } from "@radix-ui/react-icons"
-import { waitUntil } from "@vercel/functions"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -91,17 +90,15 @@ export default function LoginForm() {
     setLoading(true)
     setError(false)
 
-    waitUntil(
-      signInWithGoogle()
-        .then((result: Result) => {
-          if (result?.status === "error") {
-            setError(true)
-          }
-        })
-        .catch(() => {
+    signInWithGoogle()
+      .then((result: Result) => {
+        if (result?.status === "error") {
           setError(true)
-        })
-    )
+        }
+      })
+      .catch(() => {
+        setError(true)
+      })
 
     setLoading(false)
   }
@@ -110,18 +107,16 @@ export default function LoginForm() {
     setLoading(true)
     setError(false)
 
-    waitUntil(
-      signInWithSpotify()
-        .then((result: Result) => {
-          if (result?.status === "error") {
-            console.error(result.message)
-            setError(true)
-          }
-        })
-        .catch(() => {
+    signInWithSpotify()
+      .then((result: Result) => {
+        if (result?.status === "error") {
+          console.error(result.message)
           setError(true)
-        })
-    )
+        }
+      })
+      .catch(() => {
+        setError(true)
+      })
 
     setLoading(false)
   }
